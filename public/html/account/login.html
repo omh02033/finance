@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0,user-scalable=no,maximum-scale=1,width=device-width">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"> -->
+    <link rel="stylesheet" href="/stylesheets/materialize/materialize.css">
+    <title>로그인</title>
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #0E0E0E;
+            overflow: hidden;
+            -ms-user-select: none; -moz-user-select: -moz-none; -webkit-user-select: none; -khtml-user-select: none; user-select:none;
+        }
+        .contain {
+            width: 80%;
+            position: absolute;
+            transform: translate(-50%, -50%);
+            bottom: 28%;
+            left: 50%;
+        }
+        .inp, .inp > input {
+            width: 100%;
+            color: #9a9aa1;
+        }
+        .subbutton {
+            color: #9a9aa1;
+            position: relative;
+        }
+        .subbutton > button {
+            position: absolute;
+            right: 0;
+            background-color: #313135;
+        }
+        .logo {
+            position: absolute;
+            transform: translate(-50%, 0);
+            left: 50%;
+            top: 16%;
+        }
+        .logo > img {
+            width: 100px;
+            border-radius: 15px;
+            box-shadow: 2px 2px 2px 2px rgb(0, 0, 0);
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">
+        <img src="/images/logo.jpg" alt="">
+    </div>
+    <div class="contain row">
+        <form action="/account/login" method="POST" onsubmit="userCheck(event, this);">
+            <div class="inp input-field">
+                <input type="number" id="phone" name="phone" pattern="\d*">
+                <label for="phone">전화번호</label>
+            </div>
+            <div class="subbutton">
+                <button class="btn waves-effect waves-light" type="submit" name="action">확인<i class="material-icons right">send</i></button>
+            </div>
+        </form>
+    </div>
+    <script>
+        let phone = document.getElementById("phone");
+        let phone_label = document.querySelector(".input-field > label");
+
+        phone.onfocus = () => {
+            phone_label.classList.add("t");
+        }
+        phone.onblur = () => {
+            if(!phone.value) {
+                phone_label.classList.remove("t");
+            }
+        }
+
+        function userCheck(e, form) {
+            e.preventDefault();
+
+            let userInfo = { phone: form.phone.value };
+            let xhr = new XMLHttpRequest();
+            xhr.open('POST', '/account/login/');
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = function() {
+                if(xhr.readyState === 4 && xhr.status === 200) {
+                    let data = JSON.parse(xhr.responseText);
+                    if(data.result == true) {
+                        alert(data.name + "님, 환영합니다.");
+                        location.replace(location.href);
+                    } else {
+                        alert("가입되어있지 않은 회원입니다\n010 4038 9960 으로 연락주세요.");
+                    }
+                }
+            }
+            xhr.send(JSON.stringify(userInfo));
+        }
+    </script>
+</body>
+</html>

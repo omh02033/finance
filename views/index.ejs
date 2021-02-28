@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0,user-scalable=no,maximum-scale=1,width=device-width">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/stylesheets/top.css">
+    <link rel="stylesheet" href="/stylesheets/main.css">
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="/javascripts/jquery-ui.min.js"></script>
+    <title>주식</title>
+    <script src="/javascripts/lr.js"></script>
+    <style>
+        .dn {
+            display: none !important;
+        }
+        .df {
+            display: flex !important;
+        }
+        .db {
+            display: block !important;
+        }
+        .h200 {
+            height: 200px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .orientleft {
+            transform: rotate(-90deg);
+            transform-origin:160px 160px;
+        }
+
+        .orientright {
+            transform: rotate(90deg);
+            transform-origin:230px 230px;
+        } 
+
+        * {
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+        body {
+            padding: 0;
+            margin: 0;
+            width: 100vw;
+            background-color: #000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .foot {
+            width: 100%;
+            height: 50px;
+            background-color: #1c1c1d;
+            display: flex;
+            align-items: center;
+            padding-left: 15px;
+            position: fixed;
+            bottom: 0;
+            z-index: 40;
+            border-top: 1px solid #2d2d2e;
+        }
+        .foot img {
+            height: 50%;
+            width: auto;
+        }
+
+        .bottom {
+            position: absolute;
+            top: 0;
+            transform: translateY(100%);
+            width: 100%;
+            height: 100vh;
+            background-color: #1c1c1d;
+            border-radius: 13px;
+            z-index: 15;
+        }
+        .bottom.on {
+            transition: transform 0.4s ease;
+            transform: translateY(65px) !important;
+        }
+        .bottom.off {
+            transition: transform 0.4s ease;
+            transform: translateY(100%) !important;
+        }
+        #bottom_close_button {
+            background-color: #313135;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            color: #94949b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="top">
+        <div class="explain">
+            <span style="font-size: 24px; color: white; display:block; margin: 0;font-weight: bold;">주식</span>
+            <span id="today_date"><%= today_date %></span>
+        </div>
+        <div class="mainsearchb">
+            <div class="searchb">
+                <div class="sch">
+                    <i class="material-icons" style="margin-right: 5px; font-size: 19px;width:20px;">search</i>
+                    <form action="/" onsubmit="form_search(event);">
+                        <input autocomplete="off" type="search" name="search" id="finance_search" placeholder="검색">
+                    </form>
+                    <div class="xb"><i class="material-icons" style="font-size:10px;">clear</i></div>
+                </div>
+            </div>
+            <div id="search_cancel">취소</div>
+        </div>
+    </div>
+
+    <div class="main h200">
+        <div class="main_blind"></div>
+        <div class="loader"></div>
+        </div>
+    </div>
+
+    <div class="bottom">
+        <div id="bottom_close_button"><i class="material-icons" style="font-weight: bold; font-size: 17px;">clear</i></div>
+    </div>
+
+    <div class="foot">
+        <img src="/images/yahoo_finance.png" alt="">
+    </div>
+
+    <script src="/javascripts/update.js"></script>
+    <script src="/javascripts/search.js"></script>
+    <script src="/javascripts/lightweight-charts.standalone.production.js"></script>
+    <script src="/javascripts/start_finance_info.js"></script>
+    <script>
+        window.onload = (e) => {
+            get_finance_info();
+        }
+        document.body.addEventListener("scroll touchmove mousewhell", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            return false;
+        });
+        s_top.addEventListener("scroll touchmove mousewhell", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            return false;
+        });
+
+        let botto = document.querySelector(".bottom");
+
+        function bottom_on() {
+            top_explain.classList.remove("exdn");
+            top_explain.classList.remove("exdb");
+            top_explain.classList.add("exdn");
+            searchb.classList.remove("exdn");
+            searchb.classList.remove("exdb");
+            searchb.classList.add("exdn");
+            botto.classList.remove("on");
+            botto.classList.remove("off");
+            botto.classList.add("on");
+        }
+
+        function bottom_down() {
+            top_explain.classList.remove("exdn");
+            top_explain.classList.remove("exdb");
+            top_explain.classList.add("exdb");
+            searchb.classList.remove("exdn");
+            searchb.classList.remove("exdb");
+            searchb.classList.add("exdb");
+            botto.classList.remove("on");
+            botto.classList.remove("off");
+            botto.classList.add("off");
+        }
+        
+        let startY, endY;
+        let y1, y2;
+        let cancel_status = false;
+        botto.addEventListener("touchstart", (e) => {
+            if(!cancel_status) {
+                e.preventDefault();
+                startY = e.changedTouches[0].screenY;
+                y1 = e.changedTouches[0].pageY;
+                botto.classList.remove("on");
+                botto.style.transform = "translateY(65px)";
+            }
+        });
+        botto.addEventListener("touchmove", (e) => {
+            if(!cancel_status) {
+                if(y1 - e.changedTouches[0].pageY > 0) {
+                    e.preventDefault();
+                } else {
+                    y2 = y1 - e.changedTouches[0].pageY;
+                    botto.style.transform = `translateY(${65 - y2}px)`;
+                }
+            }
+        });
+        botto.addEventListener("touchend", (e) => {
+            if(!cancel_status) {
+                endY = e.changedTouches[0].screenY;
+                if((endY - startY) < 75) {
+                    botto.classList.add("on");
+                    botto.style.transform = "translateY(65px)";
+                } else bottom_down();
+            }
+        });
+
+        let bottom_close_button = document.getElementById("bottom_close_button");
+        bottom_close_button.addEventListener("touchstart", (e) => {
+            cancel_status = true;
+            e.stopPropagation();
+        });
+        bottom_close_button.addEventListener("touchend", (e) => {
+            cancel_status = false;
+            bottom_down();
+            e.stopPropagation();
+        });
+    </script>
+</body>
+</html>

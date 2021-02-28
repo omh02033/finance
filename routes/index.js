@@ -1,0 +1,134 @@
+const express = require("express");
+const router = express.Router();
+const config = require('../config/jwt');
+const jwt = require('jsonwebtoken');
+const mysql = require('mysql');
+const path = require('path');
+const moment = require('moment');
+const yahooFinance = require('yahoo-finance');
+const axios = require('axios');
+
+let conn = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    database: 'nagongfinance'
+});
+conn.connect();
+
+router
+.get('/', (req, res) => {
+    let token = req.cookies.user;
+    if(!token) return res.sendFile('login.html', { root: path.join(__dirname, '../public/html/account') });
+    jwt.verify(token, config.secret, (err, decoded) => {
+        if(err) return res.json(err);
+        let sql = 'SELECT * FROM account WHERE id=?';
+        conn.query(sql, [decoded.phone], (err1, data) => {
+            if(err1) return res.json(err1);
+            res.clearCookie("user");
+            let user = data[0];
+            let token = jwt.sign({ phone: user.id, star: user.star, definance: user.default_finance, view: user.view }, config.secret, {expiresIn: '100d'});
+            res.cookie("user", token);
+            let today_date = moment().format("MM월 DD일");
+            if(today_date.substring(0, 1) == '0') {
+                today_date = today_date.substring(1);
+            }
+            res.locals.today_date = today_date;
+            res.render('index');
+        });
+    });
+})
+.get('/test/', (req, res) => {
+    res.sendFile('test.html', { root: path.join(__dirname, '../') });
+})
+
+.post('/finance/', async (req, res) => {
+    let token = req.cookies.user;
+    if(!token) return res.sendFile('login.html', { root: path.join(__dirname, '../public/html/account') });
+    jwt.verify(token, config.secret, async (err, decoded) => {
+        if(err) return res.status(400).json({ result: false, err: err });
+        let star = JSON.parse(decoded.star);
+        let definance = JSON.parse(decoded.definance);
+        let view = JSON.parse(decoded.view);
+
+        let star_status = false;
+        let definance_status = false;
+        let view_status = false;
+
+        if(star.length > 0) star_status = true;
+        if(definance.length > 0) definance_status = true;
+        if(view.length > 0) view_status = true;
+
+        let finance_star = [];
+        let finance_definance = [];
+        let finance_view = [];
+
+        if(star_status) finance_star = await get_finance_info(star);
+        if(definance_status) finance_definance = await get_finance_info(definance);
+        if(view_status) finance_view = await get_finance_info(view);
+
+        res.status(200).json({ result: true, data_star: finance_star, data_definance: finance_definance, data_view: finance_view, star_status: star_status, definance_status: definance_status, view_status: view_status, star: star, definance: definance, view: view });
+    });
+})
+
+.post('/chart/preview', async (req, res) => {
+    let result = {};
+    // for(let i of req.body.symbols) {
+        let a = await get_chart_info_preview(req.body.symbols);
+        let b = [];
+
+        for(let j in a.timestamp) {
+            if(!a.indicators.quote[0].close[j]) continue;
+            b.push({ 'time': a.timestamp[j], 'value': Number(a.indicators.quote[0].close[j].toFixed(2)) });
+        }
+
+        for(let j=b[b.length-1].time+300; j>a.meta.tradingPeriods[0][0].end; j+=300) {
+            b.push({ 'time': j });
+        }
+        result[req.body.symbols] = { data: b, from: a.meta.tradingPeriods[0][0].start, to: a.meta.tradingPeriods[0][0].end };
+    // }
+    res.status(200).json(result);
+})
+
+.post('/test/', async (req, res) => {
+    let a = await get_chart_info_preview('%5EDJI');
+    let b = [];
+
+    for(let i in a.timestamp) {
+        if(!a.indicators.quote[0].close[i]) continue;
+        b.push({ 'time': a.timestamp[i], 'value': Math.floor(a.indicators.quote[0].close[i] * 100)/100 });
+    }
+    for(let i=b[b.length-1].time+60; i<a.meta.tradingPeriods[0][0].end; i+=300) {
+        b.push({ 'time': i });
+    }
+    res.status(200).json({ data: b, from: a.meta.tradingPeriods[0][0].start, to: a.meta.tradingPeriods[0][0].end });
+})
+
+module.exports = router;
+
+async function get_finance_info(symbol) {
+    return yahooFinance.quote({
+        symbols: symbol,
+        modules: [ 'price', 'summaryDetail' ]
+    }, function(err, quotes) {
+        if(err) console.log(err);
+        else {
+            return quotes;
+        }
+    });
+}
+async function get_chart_info_preview(symbol) {
+    const getBreeds = async () => {
+        try {
+            return await axios.get(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?symbol=${symbol}&range=1d&interval=5m`);
+        } catch(err) {
+            console.error(err);
+        }
+    };
+    
+    const countBreeds = async () => {
+        const breeds = await getBreeds();
+        return breeds.data.chart.result[0];
+    }
+    return await countBreeds();
+}
