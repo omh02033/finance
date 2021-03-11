@@ -11,8 +11,10 @@ function get_pre_graph(symbols_data, colors_data) {
         xhr.onreadystatechange = () => {
             if(xhr.status === 200 && xhr.readyState === 4) {
                 let data = JSON.parse(xhr.responseText);
-                let chart_ch = document.querySelector(`.f_${symbol_name.replace('.', '___')} > .chart`);
-                chart_ch.removeChild(document.querySelector(`.f_${symbol_name.replace('.', '___')} .chart .loader`));
+
+                // main preview graph setting
+                let chart_ch = document.querySelector(`.main .f_${symbol_name.replace('.', '___')} > .chart`);
+                chart_ch.removeChild(document.querySelector(`.main .f_${symbol_name.replace('.', '___')} .chart .loader`));
                 var container = document.createElement('div');
                 chart_ch.appendChild(container);
 
@@ -81,6 +83,79 @@ function get_pre_graph(symbols_data, colors_data) {
                     from: 0.1,
                     to: data[symbol_name].data.length-1
                 });
+
+
+                // bottoming top preview graph setting
+                let b_chart_ch = document.querySelector(`.on_bottom_top .b_${symbol_name.replace('.', '___')} > .bottom_top_right`);
+                var b_container = document.createElement('div');
+                b_chart_ch.appendChild(b_container);
+
+                var b_chart = LightweightCharts.createChart(b_container, {
+                    width: 60,
+                    height: 50,
+                    rightPriceScale: {
+                        visible: false,
+                    },
+                    leftPriceScale: {
+                        visible: false,
+                    },
+                    timeScale: {
+                        visible: false,
+                        secondsVisible: true,
+                    },
+                    crosshair: {
+                        horzLine: {
+                            visible: false,
+                        },
+                        vertLine: {
+                            visible: false,
+                        },
+                    },
+                    layout: {
+                        backgroundColor: 'rgba(0, 0, 0, 0)',
+                    },
+                    grid: {
+                        vertLines: {
+                            color: 'rgba(0, 0, 0, 0)',
+                        },
+                        horzLines: {
+                            color: 'rgba(0, 0, 0, 0)',
+                        },
+                    },
+                    handleScroll: false,
+                    handleScale: false
+                });
+
+                let bottoming_preview_graph;
+
+                if(colors_data[symbol_name].color == 'red') {
+                    bottoming_preview_graph = b_chart.addAreaSeries({
+                        symbol: 'AAPL',
+                        topColor: 'rgba(237 , 56, 46, 0.5)',
+                        lineColor: 'rgba(237 , 56, 46, 1)',
+                        bottomColor: 'rgba(237 , 56, 46, 0)',
+                        lineWidth: 2,
+                    });
+                } else {
+                    bottoming_preview_graph = b_chart.addAreaSeries({
+                        symbol: 'AAPL',
+                        topColor: 'rgba(76, 175, 80, 0.5)',
+                        lineColor: 'rgba(76, 175, 80, 1)',
+                        bottomColor: 'rgba(76, 175, 80, 0)',
+                        lineWidth: 2,
+                    });
+                }
+
+                bottoming_preview_graph.setData(data[symbol_name].data);
+                    
+                b_chart.timeScale().setVisibleRange({
+                    from: data[symbol_name].from,
+                    to: data[symbol_name].to
+                });
+                b_chart.timeScale().getVisibleLogicalRange({
+                    from: 0.1,
+                    to: data[symbol_name].data.length-1
+                });
             }
         }
         xhr.send(JSON.stringify(info));
@@ -88,6 +163,7 @@ function get_pre_graph(symbols_data, colors_data) {
 }
 
 function make_finance_preview(data, symbol_name) {
+    // main preview setting
     let main = document.querySelector(".main");
 
     let m_div = document.createElement("div");
@@ -102,11 +178,11 @@ function make_finance_preview(data, symbol_name) {
 
     let main_name_div = document.createElement("div");
     main_name_div.classList.add("main_name");
-    main_name_div.innerHTML = symbol_name;
+    main_name_div.innerHTML = data.korea_name;
 
     let long_name_div = document.createElement("div");
     long_name_div.classList.add("long_name");
-    long_name_div.innerHTML = data.price.longName;
+    long_name_div.innerHTML = symbol_name;
 
     name_div.appendChild(main_name_div);
     name_div.appendChild(long_name_div);
@@ -144,7 +220,7 @@ function make_finance_preview(data, symbol_name) {
     let market_change = data.price.regularMarketChange;
     let color;
     market_change = Number(market_change.toFixed(2)).toLocaleString();
-    if(market_change >= 0) { market_change_div.classList.add("price_green"); color='green'; }
+    if(Number(market_change.replace(',', '')) >= 0) { market_change_div.classList.add("price_green"); color='green'; }
     else { market_change_div.classList.add("price_red"); color='red' }
     if(color == 'green') market_change = '+' + market_change;
     if(market_change.indexOf('.') && market_change.length < 5) market_change = market_change + '.00'
@@ -156,6 +232,44 @@ function make_finance_preview(data, symbol_name) {
     m_div.appendChild(price_status_div);
 
     main.appendChild(m_div);
+
+
+    // bottoming preview setting
+    let on_bottom_top = document.querySelector(".on_bottom_top");
+
+    let b_div = document.createElement("div");
+    b_div.classList.add(`b_${symbol_name.replace('.', '___')}`);
+
+    let bottom_top_left = document.createElement("div");
+    bottom_top_left.classList.add("bottom_top_left");
+
+
+    let btl_main_name = document.createElement("div");
+    btl_main_name.classList.add("btl_main_name");
+    btl_main_name.innerHTML = data.korea_name;
+    bottom_top_left.appendChild(btl_main_name);
+
+    let btl_market_price = document.createElement("div");
+    btl_market_price.classList.add("btl_market_price");
+    btl_market_price.innerHTML = market_price;
+    bottom_top_left.appendChild(btl_market_price);
+
+    let btl_market_change = document.createElement("div");
+    btl_market_change.classList.add("btl_market_change");
+    if(color == 'green') { btl_market_change.style.color = "#35c759"; }
+    else { btl_market_change.style.color = "#ff3a30"; }
+    btl_market_change.innerHTML = market_change;
+    bottom_top_left.appendChild(btl_market_change);
+
+    b_div.appendChild(bottom_top_left);
+
+
+    let bottom_top_right = document.createElement("div");
+    bottom_top_right.classList.add("bottom_top_right");
+
+    b_div.appendChild(bottom_top_right);
+
+    on_bottom_top.appendChild(b_div)
 
     return { 'color': color };
 }
@@ -199,6 +313,7 @@ function get_finance_info() {
             if(symbols_data.length > 0) {
                 get_pre_graph(symbols_data, colors_data);
             }
+            roll_start(Object.keys(finances_data).length);
         }
     }
     xhr.send(null);

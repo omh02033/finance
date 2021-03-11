@@ -6,6 +6,7 @@
     box-sizing: border-box;
     position: relative;
     overflow: hidden;
+    top: 0;
 }
 @keyframes toph65 {
     0% { height: 110px; }

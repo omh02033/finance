@@ -83,7 +83,7 @@
         }
         .bottom.on {
             transition: transform 0.4s ease;
-            transform: translateY(65px) !important;
+            transform: translateY(72px) !important;
         }
         .bottom.off {
             transition: transform 0.4s ease;
@@ -95,16 +95,101 @@
             height: 28px;
             border-radius: 50%;
             position: absolute;
-            top: 12px;
-            right: 12px;
+            top: 10px;
+            right: 10px;
             color: #94949b;
             display: flex;
             align-items: center;
             justify-content: center;
         }
+        .on_bottom_top {
+            float: left;
+            width: 100000px;
+            height: 72px;
+            overflow: hidden;
+            margin: 0;
+            font-family: 'Nanum Gothic', sans-serif;
+            display: flex;
+            opacity: 0;
+            box-sizing: border-box;
+            position: absolute;
+            align-items: center;
+        }
+        @keyframes bottom_top_on {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        @keyframes bottom_top_off {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        .on_bottom_top.odf {
+            animation: bottom_top_on 0.4s forwards;
+        }
+        .on_bottom_top.odn {
+            animation: bottom_top_off 0.4s forwards;
+        }
+        .on_bottom_top > div {
+            width: auto;
+            height: 80%;
+            display: flex;
+            align-items: center;
+            position: absolute;
+        }
+        .on_bottom_top .bottom_top_left {
+            height: 100%;
+            margin-right: 7px;
+            font-size: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
+        .btl_main_name, .btl_market_price {
+            font-weight: bold;
+            color: white;
+        }
+        .on_bottom_top .bottom_top_right {
+            width: 60px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .bottom_main_name {
+            width: 100%;
+            height: 60px;
+            padding: 15px 15px 0 15px;
+            box-sizing: border-box;
+        }
+        .bottom_main_name > div {
+            width: 100%;
+            height: 100%;
+            border-bottom: 1px solid #2b2b2d;
+            display: flex;
+            align-items: flex-end;
+            padding-bottom: 13px;
+        }
+        .bottom_main_name .main_name {
+            color: #ddf5e2;
+            font-size: 20px;
+            font-weight: bold;
+            margin-right: 11px;
+        }
+        .bottom_main_name .long_name {
+            font-size: 13.5px;
+            color: #8b8b8f;
+        }
+
+        .bottom_price_change {
+            width: 100%;
+            height: 30px;
+            border-bottom: 1px solid #2b2b2d;
+        }
     </style>
 </head>
 <body>
+    <div class="on_bottom_top"></div>
+
     <div class="top">
         <div class="explain">
             <span style="font-size: 24px; color: white; display:block; margin: 0;font-weight: bold;">주식</span>
@@ -132,6 +217,15 @@
 
     <div class="bottom">
         <div id="bottom_close_button"><i class="material-icons" style="font-weight: bold; font-size: 17px;">clear</i></div>
+        <div class="bottom_main_name">
+            <div>
+                <div class="main_name">SK하이닉스</div>
+                <div class="long_name">SK hynix</div>
+            </div>
+        </div>
+        
+        <div class="bottom_price_change">
+        </div>
     </div>
 
     <div class="foot">
@@ -142,7 +236,31 @@
     <script src="/javascripts/search.js"></script>
     <script src="/javascripts/lightweight-charts.standalone.production.js"></script>
     <script src="/javascripts/start_finance_info.js"></script>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script>
+        var bannerLeft=0;
+        var first=1;
+        var last;
+        var imgCnt=0;
+        var $img;
+        var $first;
+        var $last;
+        function bottom_top_roll() {
+            $img.each(function(){
+                $(this).css("left", $(this).position().left-1); // 1px씩 왼쪽으로 이동
+            });
+            $first = $("#banner"+first);
+            $last = $("#banner"+last);
+            if($first.position().left < -200) {    // 제일 앞에 배너 제일 뒤로 옮김
+                $first.css("left", $last.position().left + $last.width()+130 );
+                first++;
+                last++;
+                if(last > imgCnt) { last=1; }   
+                if(first > imgCnt) { first=1; }
+            }
+        }
+
+        let roll_s;
         window.onload = (e) => {
             get_finance_info();
         }
@@ -158,8 +276,10 @@
         });
 
         let botto = document.querySelector(".bottom");
+        let on_bottom_top = document.querySelector(".on_bottom_top");
 
         function bottom_on() {
+            roll_s = setInterval(bottom_top_roll, 70);
             top_explain.classList.remove("exdn");
             top_explain.classList.remove("exdb");
             top_explain.classList.add("exdn");
@@ -169,9 +289,13 @@
             botto.classList.remove("on");
             botto.classList.remove("off");
             botto.classList.add("on");
+            on_bottom_top.classList.remove("odn");
+            on_bottom_top.classList.remove("odf");
+            on_bottom_top.classList.add("odf");
         }
 
         function bottom_down() {
+            if(roll_s) clearInterval(roll_s);
             top_explain.classList.remove("exdn");
             top_explain.classList.remove("exdb");
             top_explain.classList.add("exdb");
@@ -181,6 +305,9 @@
             botto.classList.remove("on");
             botto.classList.remove("off");
             botto.classList.add("off");
+            on_bottom_top.classList.remove("odn");
+            on_bottom_top.classList.remove("odf");
+            on_bottom_top.classList.add("odn");
         }
         
         let startY, endY;
@@ -192,7 +319,7 @@
                 startY = e.changedTouches[0].screenY;
                 y1 = e.changedTouches[0].pageY;
                 botto.classList.remove("on");
-                botto.style.transform = "translateY(65px)";
+                botto.style.transform = "translateY(72px)";
             }
         });
         botto.addEventListener("touchmove", (e) => {
@@ -201,7 +328,7 @@
                     e.preventDefault();
                 } else {
                     y2 = y1 - e.changedTouches[0].pageY;
-                    botto.style.transform = `translateY(${65 - y2}px)`;
+                    botto.style.transform = `translateY(${72 - y2}px)`;
                 }
             }
         });
@@ -210,7 +337,7 @@
                 endY = e.changedTouches[0].screenY;
                 if((endY - startY) < 75) {
                     botto.classList.add("on");
-                    botto.style.transform = "translateY(65px)";
+                    botto.style.transform = "translateY(72px)";
                 } else bottom_down();
             }
         });
@@ -225,6 +352,20 @@
             bottom_down();
             e.stopPropagation();
         });
+
+        function roll_start(finances_length) {
+            $img = $(".on_bottom_top > div");
+
+            $img.each(function(){   // 5px 간격으로 배너 처음 위치 시킴
+                $(this).css("left",bannerLeft);
+                bannerLeft += $(this).width()+30;
+                $(this).attr("id", "banner"+(++imgCnt));  // img에 id 속성 추가
+            });
+
+            if(imgCnt > finances_length-1){
+                last = imgCnt;
+            }
+        }
     </script>
 </body>
 </html>

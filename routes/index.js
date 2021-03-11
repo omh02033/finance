@@ -90,32 +90,30 @@ router
     res.status(200).json(result);
 })
 
-.post('/test/', async (req, res) => {
-    let a = await get_chart_info_preview('%5EDJI');
-    let b = [];
-
-    for(let i in a.timestamp) {
-        if(!a.indicators.quote[0].close[i]) continue;
-        b.push({ 'time': a.timestamp[i], 'value': Math.floor(a.indicators.quote[0].close[i] * 100)/100 });
-    }
-    for(let i=b[b.length-1].time+60; i<a.meta.tradingPeriods[0][0].end; i+=300) {
-        b.push({ 'time': i });
-    }
-    res.status(200).json({ data: b, from: a.meta.tradingPeriods[0][0].start, to: a.meta.tradingPeriods[0][0].end });
-})
-
 module.exports = router;
 
 async function get_finance_info(symbol) {
-    return yahooFinance.quote({
+    let info = await yahooFinance.quote({
         symbols: symbol,
         modules: [ 'price', 'summaryDetail' ]
     }, function(err, quotes) {
-        if(err) console.log(err);
+        if(err) console.error(err);
         else {
             return quotes;
         }
     });
+
+    async function get_korea_name(sb) {
+        const response = await axios.get(`https://m.stock.naver.com/api/item/getOverallHeaderItem.nhn?code=${sb.split('.')[0]}`)
+        return response.data.result.nm;
+    }
+    for(let sb of symbol) {
+        if(sb.split('.')[1] == 'KS' || sb.split('.')[1] == 'KQ') {
+            info[sb]['korea_name'] = await get_korea_name(sb);
+        }
+    }
+
+    return info;
 }
 async function get_chart_info_preview(symbol) {
     const getBreeds = async () => {
