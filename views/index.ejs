@@ -182,9 +182,84 @@
 
         .bottom_price_change {
             width: 100%;
-            height: 30px;
             border-bottom: 1px solid #2b2b2d;
+            display: flex;
+            align-items: center;
+            padding: 8px 0  8px 15px;
+            /* box-sizing: border-box; */
         }
+
+        .bottom_price_change .bottom_market_price {
+            color: #ddf5e2;
+            font-size: 18px;
+            font-weight: bold;
+            display: inline-block;
+            margin-right: 17px;
+        }
+        .bottom_price_change .bottom_market_change {
+            font-size: 15px;
+        }
+        .bottom_price_change .bottom_market_change.price_green {
+            color: #35c759;
+        }
+        .bottom_price_change .bottom_market_change.price_red {
+            color: #ff3a30;
+        }
+
+        .bottom_graph {
+            width: 100%;
+            height: 300px;
+            position: relative;
+            overflow-y: hidden;
+        }
+        .bottom_graph .loader {
+            position: absolute;
+            border: 5px solid #2e2e2e;
+            border-top: 5px solid #636363;
+            transform: translate(-50%, -50%);
+            top: calc(50% - 15px);
+            left: calc(50% - 15px);
+        }
+
+        .bottom .switcher {
+            display: flex;
+            align-items: center;
+            height: 30px;
+            margin-top: 8px;
+            color: #2196F3;
+            width: 400px;
+            overflow-x: auto;
+        }
+
+        .bottom .switcher-item {
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            padding: 6px 6px;
+            font-size: 14px;
+            color: #262b3e;
+            background-color: transparent;
+            margin-right: 8px;
+            border: none;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .bottom .switcher-item:hover {
+            background-color: #f2f3f5;
+        }
+
+        .bottom .switcher-active-item {
+            text-decoration: none;
+            cursor: default;
+            color: #262b3e;
+        }
+
+        .bottom .switcher-active-item,
+        .bottom .switcher-active-item:hover {
+            background-color: #e1eff9;
+        }
+
     </style>
 </head>
 <body>
@@ -225,6 +300,11 @@
         </div>
         
         <div class="bottom_price_change">
+            <div class="bottom_market_price">7,600.00</div>
+            <div class="bottom_market_change green price_green">+4,000</div>
+        </div>
+
+        <div class="bottom_graph">
         </div>
     </div>
 
@@ -278,7 +358,7 @@
         let botto = document.querySelector(".bottom");
         let on_bottom_top = document.querySelector(".on_bottom_top");
 
-        function bottom_on() {
+        function bottom_on(dv) {
             roll_s = setInterval(bottom_top_roll, 70);
             top_explain.classList.remove("exdn");
             top_explain.classList.remove("exdb");
@@ -292,6 +372,8 @@
             on_bottom_top.classList.remove("odn");
             on_bottom_top.classList.remove("odf");
             on_bottom_top.classList.add("odf");
+            let color = dv.childNodes[2].childNodes[1].classList[1].split('_')[1];
+            bottom_graph_set(dv.className.replace('___', '.').substring(2), color);
         }
 
         function bottom_down() {
@@ -308,6 +390,330 @@
             on_bottom_top.classList.remove("odn");
             on_bottom_top.classList.remove("odf");
             on_bottom_top.classList.add("odn");
+        }
+
+        function bottom_fast(fName, color) {
+            let bottom_graph = document.querySelector(".bottom_graph");
+            let xhr = new XMLHttpRequest();
+            xhr.open('POST', `/chart/bottom/fast/${fName}`);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = () => {
+                if(xhr.status == 200 && xhr.readyState === 4) {
+                    let data = JSON.parse(xhr.responseText);
+                    while(bottom_graph.hasChildNodes()) {
+                        bottom_graph.removeChild(bottom_graph.firstChild);
+                    }
+                    function createSimpleSwitcher(items, activeItem, activeItemChangedCallback) {
+                        var switcherElement = document.createElement('div');
+                        switcherElement.classList.add('switcher');
+
+                        var intervalElements = items.map(function(item) {
+                            var itemEl = document.createElement('button');
+                            itemEl.innerText = item;
+                            itemEl.classList.add('switcher-item');
+                            itemEl.classList.toggle('switcher-active-item', item === activeItem);
+                            itemEl.addEventListener('click', function() {
+                                onItemClicked(item);
+                            });
+                            switcherElement.appendChild(itemEl);
+                            return itemEl;
+                        });
+
+                        function onItemClicked(item) {
+                            if (item === activeItem) {
+                                return;
+                            }
+
+                            intervalElements.forEach(function(element, index) {
+                                element.classList.toggle('switcher-active-item', items[index] === item);
+                            });
+
+                            activeItem = item;
+
+                            activeItemChangedCallback(item);
+                        }
+
+                        return switcherElement;
+                    }
+
+                    var intervals = ['1일', '5일', '1달', '3달', '6달', '1년', '2년', '5년', '10년'];
+
+                    let _1dayData = [];
+                    for(let j in data.data[intervals[0]][0].timestamp) {
+                        if(!data.data[intervals[0]][0].indicators.quote[0].close[j]) continue;
+                        _1dayData.push({ 'time': data.data[intervals[0]][0].timestamp[j], 'value': Number(data.data[intervals[0]][0].indicators.quote[0].close[j].toFixed(2)) });
+                    }
+
+                    let _5dayData = [];
+                    let _1monthData = [];
+                    let _3monthData = [];
+                    let _6monthData = [];
+                    let _1yearData = [];
+                    let _2yearData = [];
+                    let _5yearData = [];
+                    let _10yearData = [];
+
+                    var seriesesData = new Map([
+                        ['1일', _1dayData ],
+                        ['5일', _5dayData ],
+                        ['1달', _1monthData ],
+                        ['3달', _3monthData ],
+                        ['6달', _6monthData ],
+                        ['1년', _1yearData ],
+                        ['2년', _2yearData ],
+                        ['5년', _5yearData ],
+                        ['10년', _10yearData ],
+                    ]);
+
+                    var switcherElement = createSimpleSwitcher(intervals, intervals[0], syncToInterval);
+
+                    var chartElement = document.createElement('div');
+
+                    var chart = LightweightCharts.createChart(chartElement, {
+                        width: screen.width,
+                        height: 250,
+                        layout: {
+                            backgroundColor: '#1c1c1d',
+                            textColor: '#d1d4dc',
+                        },
+                        grid: {
+                            vertLines: {
+                                visible: false,
+                            },
+                            horzLines: {
+                                color: 'rgba(42, 46, 57, 0.5)',
+                            },
+                        },
+                        rightPriceScale: {
+                            borderVisible: false,
+                        },
+                        timeScale: {
+                            borderVisible: false,
+                        },
+                        crosshair: {
+                            horzLine: {
+                                visible: false,
+                            },
+                        },
+                    });
+
+                    bottom_graph.appendChild(switcherElement);
+                    bottom_graph.appendChild(chartElement);
+
+                    var areaSeries = null;
+
+                    function syncToInterval(interval) {
+                        if (areaSeries) {
+                            chart.removeSeries(areaSeries);
+                            areaSeries = null;
+                        }
+                        if(color == 'green') {
+                            areaSeries = chart.addAreaSeries({
+                            topColor: 'rgba(76, 175, 80, 0.56)',
+                            bottomColor: 'rgba(76, 175, 80, 0.04)',
+                            lineColor: 'rgba(76, 175, 80, 1)',
+                            lineWidth: 2,
+                            });
+                        } else {
+                            areaSeries = chart.addAreaSeries({
+                            topColor: 'rgba(237 , 56, 46, 0.5)',
+                            lineColor: 'rgba(237 , 56, 46, 1)',
+                            bottomColor: 'rgba(237 , 56, 46, 0)',
+                            lineWidth: 2,
+                            });
+                        }
+                        areaSeries.setData(seriesesData.get(interval));
+                    }
+
+                    syncToInterval(intervals[0]);
+                }
+            }
+            xhr.send()
+        }
+
+        function bottom_graph_set(fName, color) {
+            let bottom_graph = document.querySelector('.bottom_graph');
+            while(bottom_graph.hasChildNodes()) {
+                bottom_graph.removeChild(bottom_graph.firstChild);
+            }
+            let loader = document.createElement("div");
+            loader.classList.add("loader");
+            bottom_graph.appendChild(loader);
+            bottom_fast(fName, color);
+            let xhr = new XMLHttpRequest();
+            xhr.open('POST', `/chart/bottom/${fName}`);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = () => {
+                if(xhr.status === 200 && xhr.readyState === 4) {
+                    let data = JSON.parse(xhr.responseText);
+                    while(bottom_graph.hasChildNodes()) {
+                        bottom_graph.removeChild(bottom_graph.firstChild);
+                    }
+                    function createSimpleSwitcher(items, activeItem, activeItemChangedCallback) {
+                        var switcherElement = document.createElement('div');
+                        switcherElement.classList.add('switcher');
+
+                        var intervalElements = items.map(function(item) {
+                            var itemEl = document.createElement('button');
+                            itemEl.innerText = item;
+                            itemEl.classList.add('switcher-item');
+                            itemEl.classList.toggle('switcher-active-item', item === activeItem);
+                            itemEl.addEventListener('click', function() {
+                                onItemClicked(item);
+                            });
+                            switcherElement.appendChild(itemEl);
+                            return itemEl;
+                        });
+
+                        function onItemClicked(item) {
+                            if (item === activeItem) {
+                                return;
+                            }
+
+                            intervalElements.forEach(function(element, index) {
+                                element.classList.toggle('switcher-active-item', items[index] === item);
+                            });
+
+                            activeItem = item;
+
+                            activeItemChangedCallback(item);
+                        }
+
+                        return switcherElement;
+                    }
+
+                    var intervals = ['1일', '5일', '1달', '3달', '6달', '1년', '2년', '5년', '10년'];
+
+                    let _1dayData = [];
+                    for(let j in data.data[intervals[0]][0].timestamp) {
+                        if(!data.data[intervals[0]][0].indicators.quote[0].close[j]) continue;
+                        _1dayData.push({ 'time': data.data[intervals[0]][0].timestamp[j], 'value': Number(data.data[intervals[0]][0].indicators.quote[0].close[j].toFixed(2)) });
+                    }
+
+                    let _5dayData = [];
+                    for(let j in data.data[intervals[1]][0].timestamp) {
+                        if(!data.data[intervals[1]][0].indicators.quote[0].close[j]) continue;
+                        _5dayData.push({ 'time': data.data[intervals[1]][0].timestamp[j], 'value': Number(data.data[intervals[1]][0].indicators.quote[0].close[j].toFixed(2)) });
+                    }
+
+                    let _1monthData = [];
+                    for(let j in data.data[intervals[2]][0].timestamp) {
+                        if(!data.data[intervals[2]][0].indicators.quote[0].close[j]) continue;
+                        _1monthData.push({ 'time': data.data[intervals[2]][0].timestamp[j], 'value': Number(data.data[intervals[2]][0].indicators.quote[0].close[j].toFixed(2)) });
+                    }
+
+                    let _3monthData = [];
+                    for(let j in data.data[intervals[3]][0].timestamp) {
+                        if(!data.data[intervals[3]][0].indicators.quote[0].close[j]) continue;
+                        _3monthData.push({ 'time': data.data[intervals[3]][0].timestamp[j], 'value': Number(data.data[intervals[3]][0].indicators.quote[0].close[j].toFixed(2)) });
+                    }
+
+                    let _6monthData = [];
+                    for(let j in data.data[intervals[4]][0].timestamp) {
+                        if(!data.data[intervals[4]][0].indicators.quote[0].close[j]) continue;
+                        _6monthData.push({ 'time': data.data[intervals[4]][0].timestamp[j], 'value': Number(data.data[intervals[4]][0].indicators.quote[0].close[j].toFixed(2)) });
+                    }
+
+                    let _1yearData = [];
+                    for(let j in data.data[intervals[5]][0].timestamp) {
+                        if(!data.data[intervals[5]][0].indicators.quote[0].close[j]) continue;
+                        _1yearData.push({ 'time': data.data[intervals[5]][0].timestamp[j], 'value': Number(data.data[intervals[5]][0].indicators.quote[0].close[j].toFixed(2)) });
+                    }
+
+                    let _2yearData = [];
+                    for(let j in data.data[intervals[6]][0].timestamp) {
+                        if(!data.data[intervals[6]][0].indicators.quote[0].close[j]) continue;
+                        _5dayData.push({ 'time': data.data[intervals[6]][0].timestamp[j], 'value': Number(data.data[intervals[6]][0].indicators.quote[0].close[j].toFixed(2)) });
+                    }
+
+                    let _5yearData = [];
+                    for(let j in data.data[intervals[7]][0].timestamp) {
+                        if(!data.data[intervals[7]][0].indicators.quote[0].close[j]) continue;
+                        _5dayData.push({ 'time': data.data[intervals[7]][0].timestamp[j], 'value': Number(data.data[intervals[7]][0].indicators.quote[0].close[j].toFixed(2)) });
+                    }
+
+                    let _10yearData = [];
+                    for(let j in data.data[intervals[8]][0].timestamp) {
+                        if(!data.data[intervals[8]][0].indicators.quote[0].close[j]) continue;
+                        _10yearData.push({ 'time': data.data[intervals[8]][0].timestamp[j], 'value': Number(data.data[intervals[8]][0].indicators.quote[0].close[j].toFixed(2)) });
+                    }
+
+                    var seriesesData = new Map([
+                        ['1일', _1dayData ],
+                        ['5일', _5dayData ],
+                        ['1달', _1monthData ],
+                        ['3달', _3monthData ],
+                        ['6달', _6monthData ],
+                        ['1년', _1yearData ],
+                        ['2년', _2yearData ],
+                        ['5년', _5yearData ],
+                        ['10년', _10yearData ],
+                    ]);
+
+                    var switcherElement = createSimpleSwitcher(intervals, intervals[0], syncToInterval);
+
+                    var chartElement = document.createElement('div');
+
+                    var chart = LightweightCharts.createChart(chartElement, {
+                        width: screen.width,
+                        height: 250,
+                        layout: {
+                            backgroundColor: '#1c1c1d',
+                            textColor: '#d1d4dc',
+                        },
+                        grid: {
+                            vertLines: {
+                                visible: false,
+                            },
+                            horzLines: {
+                                color: 'rgba(42, 46, 57, 0.5)',
+                            },
+                        },
+                        rightPriceScale: {
+                            borderVisible: false,
+                        },
+                        timeScale: {
+                            borderVisible: false,
+                        },
+                        crosshair: {
+                            horzLine: {
+                                visible: false,
+                            },
+                        },
+                    });
+
+                    bottom_graph.appendChild(switcherElement);
+                    bottom_graph.appendChild(chartElement);
+
+                    var areaSeries = null;
+
+                    function syncToInterval(interval) {
+                        if (areaSeries) {
+                            chart.removeSeries(areaSeries);
+                            areaSeries = null;
+                        }
+                        if(color == 'green') {
+                            areaSeries = chart.addAreaSeries({
+                            topColor: 'rgba(76, 175, 80, 0.56)',
+                            bottomColor: 'rgba(76, 175, 80, 0.04)',
+                            lineColor: 'rgba(76, 175, 80, 1)',
+                            lineWidth: 2,
+                            });
+                        } else {
+                            areaSeries = chart.addAreaSeries({
+                            topColor: 'rgba(237 , 56, 46, 0.5)',
+                            lineColor: 'rgba(237 , 56, 46, 1)',
+                            bottomColor: 'rgba(237 , 56, 46, 0)',
+                            lineWidth: 2,
+                            });
+                        }
+                        areaSeries.setData(seriesesData.get(interval));
+                    }
+
+                    syncToInterval(intervals[0]);
+                }
+            }
+            xhr.send();
         }
         
         let startY, endY;
@@ -362,7 +768,7 @@
                 $(this).attr("id", "banner"+(++imgCnt));  // img에 id 속성 추가
             });
 
-            if(imgCnt > finances_length-1){
+            if(imgCnt > finances_length-1) {
                 last = imgCnt;
             }
         }

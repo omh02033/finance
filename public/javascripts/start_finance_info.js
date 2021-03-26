@@ -1,6 +1,7 @@
 let preview_gragh_serises = {};
 let preview_graph_data = {};
 let finances_data = {};
+let bottom_graph_serises;
 
 function get_pre_graph(symbols_data, colors_data) {
     for(let symbol_name of symbols_data) {
@@ -168,7 +169,7 @@ function make_finance_preview(data, symbol_name) {
 
     let m_div = document.createElement("div");
     m_div.classList.add(`f_${symbol_name.replace('.', '___')}`);
-    m_div.onclick = () => { bottom_on(); }
+    m_div.onclick = function() { bottom_on(this); }
 
 
 

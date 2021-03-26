@@ -7,6 +7,7 @@ const path = require('path');
 const moment = require('moment');
 const yahooFinance = require('yahoo-finance');
 const axios = require('axios');
+const { start } = require("repl");
 
 let conn = mysql.createConnection({
     host: 'localhost',
@@ -73,24 +74,75 @@ router
 
 .post('/chart/preview', async (req, res) => {
     let result = {};
-    // for(let i of req.body.symbols) {
-        let a = await get_chart_info_preview(req.body.symbols);
-        let b = [];
+    let a = await get_chart_info_preview(req.body.symbols);
+    let b = [];
 
-        for(let j in a.timestamp) {
-            if(!a.indicators.quote[0].close[j]) continue;
-            b.push({ 'time': a.timestamp[j], 'value': Number(a.indicators.quote[0].close[j].toFixed(2)) });
-        }
+    for(let j in a.timestamp) {
+        if(!a.indicators.quote[0].close[j]) continue;
+        b.push({ 'time': a.timestamp[j], 'value': Number(a.indicators.quote[0].close[j].toFixed(2)) });
+    }
 
-        for(let j=b[b.length-1].time+300; j>a.meta.tradingPeriods[0][0].end; j+=300) {
-            b.push({ 'time': j });
-        }
-        result[req.body.symbols] = { data: b, from: a.meta.tradingPeriods[0][0].start, to: a.meta.tradingPeriods[0][0].end };
-    // }
+    for(let j=b[b.length-1].time+300; j>a.meta.tradingPeriods[0][0].end; j+=300) {
+        b.push({ 'time': j });
+    }
+    result[req.body.symbols] = { data: b, from: a.meta.tradingPeriods[0][0].start, to: a.meta.tradingPeriods[0][0].end };
     res.status(200).json(result);
 })
 
+.post('/chart/bottom/fast/:symbol', async (req, res) => {
+    let info = await fast_get_bottom_graph_info(req.params.symbol);
+    res.status(200).json({data: info});
+})
+
+.post('/chart/bottom/:symbol', async (req, res) => {
+    let info = await get_bottom_graph_info(req.params.symbol);
+    res.status(200).json({data: info});
+})
+
 module.exports = router;
+
+async function fast_get_bottom_graph_info(symbol) {
+    let info = {};
+
+    const getBreeds = async () => {
+        return new Promise(async function(resolve, reject) {
+            try {
+                let a = await axios.get(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?symbol=${symbol}&range=1d&interval=1m`);
+                info['1일'] = a.data.chart.result;
+            } catch(err) {
+                console.error(err + '\nerr_code:2');
+            }
+            resolve(info);
+        });
+    }
+    return await getBreeds().then(data => { return data; });
+}
+
+async function get_bottom_graph_info(symbol) {
+    let info = {};
+    let b = ['1d', '5d', '1m', '3m', '6m', '1y', '2y', '5y', '10y'];
+    let k_b = ['1일', '5일', '1달', '3달', '6달', '1년', '2년', '5년', '10년'];
+    let s = ['1m', '5m', '30m', '60m', '90m', '1d', '1d', '1wk', '1wk'];
+    
+    const getBreeds = async () => {
+        return new Promise(async function(resolve, reject) {
+            for(let i=0; i<b.length; i++) {
+                try {
+                    let a = await axios.get(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?symbol=${symbol}&range=${b[i]}&interval=${s[i]}`);
+                    info[k_b[i]] = a.data.chart.result;
+                } catch(err) {
+                    console.error(err + '\nerr_code:1');
+                }
+            }
+            resolve(info);
+        });
+    }
+    return await getBreeds().then(data => {
+        // console.log(data.data.chart.result[0]);
+        return data;
+    });
+
+}
 
 async function get_finance_info(symbol) {
     let info = await yahooFinance.quote({
