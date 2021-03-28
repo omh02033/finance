@@ -1,8 +1,9 @@
 애플 주식 어플 클론 개발
 
-(Apple Clone Dev)
-Finance Web App\nFWA 0.5
+(Apple Clone Dev) Finance Web App  
+FWA V 0.5  
 
+이용 범위
 - 안드로이드 이용 가능
 - ISO 이용 가능
 - PC버전 device toolbar 활성화 상태 이용 가능
@@ -21,5 +22,5 @@ Finance Web App\nFWA 0.5
 - 로그인
 
 
-로그인은 현재 전화번호로 등록되어, 특정사람만 이용할 수 있음.\n
+로그인은 현재 전화번호로 등록되어, 특정사람만 이용할 수 있음.  
 테스트 아이디 : 01040389960  ← 이대로 전화번호 칸에 입력하면 로그인 가능
