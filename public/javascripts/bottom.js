@@ -24,6 +24,33 @@ let roll_s;
 
 let botto = document.querySelector(".bottom");
 let on_bottom_top = document.querySelector(".on_bottom_top");
+let star = document.querySelector(".star");
+
+star.ontouchend = function () {
+    let info = {
+        symbol: this.classList[2].replace('___', '.').substring(2)
+    }
+    let xhr = new XMLHttpRequest();
+    if(this.classList[1] == 'new') {
+        xhr.open('POST', '/star/add/');
+    } else if(this.classList[1] == 'gr') {
+        xhr.open('POST', '/star/remove/');
+    }
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = () => {
+        if(xhr.status == 200 && xhr.readyState === 4) {
+            let data = JSON.parse(xhr.responseText);
+            if(data.result == 'not') {
+                alert(data.msg);
+                location.replace(location.href);
+            } else {
+                let a = confirm(data.msg);
+                if(a) location.replace(location.href);
+            }
+        }
+    }
+    xhr.send(JSON.stringify(info));
+}
 
 function bottom_on(dv) {
     roll_s = setInterval(bottom_top_roll, 70);
@@ -32,13 +59,42 @@ function bottom_on(dv) {
     top_explain.classList.add("exdn");
     searchb.classList.remove("exdn");
     searchb.classList.remove("exdb");
+    searchb.classList.remove("dn");
     searchb.classList.add("exdn");
+    searchb.classList.add("dn");
     botto.classList.remove("on");
     botto.classList.remove("off");
     botto.classList.add("on");
     on_bottom_top.classList.remove("odn");
     on_bottom_top.classList.remove("odf");
     on_bottom_top.classList.add("odf");
+    let xhr = new XMLHttpRequest();
+    xhr.open('POST', '/cookies/get');
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = () => {
+        if(xhr.status == 200 && xhr.readyState === 4) {
+            let info = JSON.parse(xhr.responseText);
+            let my_cookie = info.data;
+            let de = my_cookie.definance;
+            let star_finance = my_cookie.star;
+            if(de.indexOf(dv.className.replace('___', '.').substring(2)) !== -1 || star_finance.indexOf(dv.className.replace('___', '.').substring(2)) !== -1) {
+                star.classList.remove(star.classList[2]);
+                star.classList.remove("gr");
+                star.classList.remove("new");
+                star.classList.add("gr");
+                star.classList.add(dv.className);
+                star.innerHTML = '관심 종목에 제거';
+            } else {
+                star.classList.remove(star.classList[2]);
+                star.classList.remove("gr");
+                star.classList.remove("new");
+                star.classList.add("new");
+                star.classList.add(dv.className);
+                star.innerHTML = '관심 종목에 추가';
+            }
+        }
+    }
+    xhr.send();
     let color = dv.childNodes[2].childNodes[1].classList[1].split('_')[1];
     set_finance_data(dv, color);
     bottom_graph_set(dv.className.replace('___', '.').substring(2), color);
@@ -51,6 +107,7 @@ function bottom_down() {
     top_explain.classList.add("exdb");
     searchb.classList.remove("exdn");
     searchb.classList.remove("exdb");
+    searchb.classList.remove("dn");
     searchb.classList.add("exdb");
     botto.classList.remove("on");
     botto.classList.remove("off");
@@ -118,26 +175,37 @@ function set_finance_data(dv, color) {
 
     if(finances_data[f_name].price.regularMarketOpen)
         MarketOpen.innerHTML = getNum('P', finances_data[f_name].price.regularMarketOpen);
+    else MarketOpen.innerHTML = '-';
     if(finances_data[f_name].price.regularMarketDayHigh)
         MarketDayHigh.innerHTML = getNum('P', finances_data[f_name].price.regularMarketDayHigh);
+    else MarketDayHigh.innerHTML = '-';
     if(finances_data[f_name].price.regularMarketDayLow)
         MarketDayLow.innerHTML = getNum('P', finances_data[f_name].price.regularMarketDayLow);
+    else MarketDayLow.innerHTML = '-';
     if(finances_data[f_name].price.regularMarketVolume) 
         MarketVolume.innerHTML = getNum('P', finances_data[f_name].price.regularMarketVolume);
+    else MarketVolume.innerHTML = '-';
     if(finances_data[f_name].summaryDetail.trailingPE)
         trailingPE.innerHTML = getNum('P', finances_data[f_name].summaryDetail.trailingPE);
+    else trailingPE.innerHTML = '-';
     if(finances_data[f_name].price.marketCap)
         marketCap.innerHTML = getNum('P', finances_data[f_name].price.marketCap);
+    else marketCap.innerHTML = '-';
     if(finances_data[f_name].summaryDetail.fiftyTwoWeekHigh)
         fiftyTwoWeekHigh.innerHTML = getNum('P', finances_data[f_name].summaryDetail.fiftyTwoWeekHigh);
+    else fiftyTwoWeekHigh.innerHTML = '-';
     if(finances_data[f_name].summaryDetail.fiftyTwoWeekLow)
         fiftyTwoWeekLow.innerHTML = getNum('P', finances_data[f_name].summaryDetail.fiftyTwoWeekLow);
+    else fiftyTwoWeekLow.innerHTML = '-';
     if(finances_data[f_name].summaryDetail.averageVolume)
         averageVolume.innerHTML = getNum('P', finances_data[f_name].summaryDetail.averageVolume);
+    else averageVolume.innerHTML = '-';
     if(finances_data[f_name].summaryDetail.dividendYield)
         dividendYield.innerHTML = getNum('B', finances_data[f_name].summaryDetail.dividendYield);
+    else dividendYield.innerHTML = '-';
     if(finances_data[f_name].summaryDetail.beta)
         beta.innerHTML = finances_data[f_name].summaryDetail.beta.toFixed(2);
+    else beta.innerHTML = '-';
 }
 
 function bottom_fast(fName, color) {
@@ -195,15 +263,6 @@ function bottom_fast(fName, color) {
                 if(!data.data[intervals[0]][0].indicators.quote[0].close[j]) continue;
                 _1dayData.push({ 'time': data.data[intervals[0]][0].timestamp[j], 'value': Number(data.data[intervals[0]][0].indicators.quote[0].close[j].toFixed(2)) });
             }
-
-            let _5dayData = [];
-            let _1monthData = [];
-            let _3monthData = [];
-            let _6monthData = [];
-            let _1yearData = [];
-            let _2yearData = [];
-            let _5yearData = [];
-            let _10yearData = [];
 
             var seriesesData = new Map([
                 ['1일', _1dayData ]
@@ -539,6 +598,69 @@ function bottom_graph_set(fName, color) {
         }
     }
     xhr.send();
+}
+
+function search_bottom_on(dv) {
+    let info = {
+        symbol: dv.className.substring(2)
+    }
+    let xhr = new XMLHttpRequest();
+    xhr.open('POST', `/chart/guess/`);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = () => {
+        if(xhr.status == 200 && xhr.readyState === 4) {
+            search_blur();
+            let data = JSON.parse(xhr.responseText);
+            finances_data[data.name] = data.data[data.name];
+            dv.className = "f_" + data.name.replace('.', '___');
+            roll_s = setInterval(bottom_top_roll, 70);
+            top_explain.classList.remove("exdn");
+            top_explain.classList.remove("exdb");
+            top_explain.classList.add("exdn");
+            searchb.classList.remove("exdn");
+            searchb.classList.remove("exdb");
+            searchb.classList.add("exdn");
+            botto.classList.remove("on");
+            botto.classList.remove("off");
+            botto.classList.add("on");
+            on_bottom_top.classList.remove("odn");
+            on_bottom_top.classList.remove("odf");
+            on_bottom_top.classList.add("odf");
+            let xhr1 = new XMLHttpRequest();
+            xhr1.open('POST', '/cookies/get');
+            xhr1.setRequestHeader('Content-Type', 'application/json');
+            xhr1.onreadystatechange = () => {
+                if(xhr1.status == 200 && xhr1.readyState === 4) {
+                    let info = JSON.parse(xhr1.responseText);
+                    let my_cookie = info.data;
+                    let de = my_cookie.definance;
+                    let star_finance = my_cookie.star;
+                    if(de.indexOf(dv.className.replace('___', '.').substring(2)) !== -1 || star_finance.indexOf(dv.className.replace('___', '.').substring(2)) !== -1) {
+                        star.classList.remove(star.classList[2]);
+                        star.classList.remove("gr");
+                        star.classList.remove("new");
+                        star.classList.add("gr");
+                        star.classList.add(dv.className);
+                        star.innerHTML = '관심 종목에 제거';
+                    } else {
+                        star.classList.remove(star.classList[2]);
+                        star.classList.remove("gr");
+                        star.classList.remove("new");
+                        star.classList.add("new");
+                        star.classList.add(dv.className);
+                        star.innerHTML = '관심 종목에 추가';
+                    }
+                }
+            }
+            xhr1.send();
+            let color;
+            if(finances_data[data.name].market_change[0] == "+") color = 'green';
+            else color = 'red';
+            set_finance_data(dv, color);
+            bottom_graph_set(dv.className.replace('___', '.').substring(2), color);
+        }
+    }
+    xhr.send(JSON.stringify(info));
 }
 
 let startY, endY;

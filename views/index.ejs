@@ -55,37 +55,27 @@
             overflow: hidden;
         }
 
-        .bottom_info {
-            display: flex;
-            overflow-x: auto;
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        .bottom_info::-webkit-scrollbar {
-            display: none;
-        }
-        .bottom_info_table {
-            border: 0;
-            margin: 0;
-            border-right: 1px solid #8b8b8f;
-            width: 150px;
-            margin: 5px;
-            padding-right: 5px;
-        }
-        .bottom_info_table.bit4 {
-            border-right: none;
-        }
-        .bottom_info_table span, .bottom_info_table td {
-            font-size: 13px;
-        }
-        .bottom_info_table .info_expl {
-            color: #8b8b8f;
-        }
-        .bottom_info_table .info_value {
-            color: white;
-            font-weight: bold;
-            text-align: right;
+        .bottom_price_change .star {
+            width: 100px;
+            height: 25px;
+            border-radius: 25px;
+            color: black;
             font-family: 'Nanum Gothic', sans-serif;
+            position: absolute;
+            right: 5px;
+            font-weight: bold;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 99;
+            padding: 0 3px 0 3px;
+        }
+        .bottom_price_change .star.new {
+            background-color: #65d1ff;
+        }
+        .bottom_price_change .star.gr {
+            background-color: #a7a7a7;
         }
     </style>
 </head>
@@ -101,9 +91,7 @@
             <div class="searchb">
                 <div class="sch">
                     <i class="material-icons" style="margin-right: 5px; font-size: 19px;width:20px;">search</i>
-                    <form action="/" onsubmit="form_search(event);">
-                        <input autocomplete="off" type="search" name="search" id="finance_search" placeholder="검색">
-                    </form>
+                    <input autocomplete="off" type="search" name="search" id="finance_search" placeholder="검색">
                     <div class="xb"><i class="material-icons" style="font-size:10px;">clear</i></div>
                 </div>
             </div>
@@ -129,6 +117,7 @@
         <div class="bottom_price_change">
             <div class="bottom_market_price"></div>
             <div class="bottom_market_change"></div>
+            <div class="star gr">관심 종목에 제거</div>
         </div>
 
         <div class="bottom_graph">
@@ -206,14 +195,14 @@
         <img src="/images/yahoo_finance.png" alt="">
     </div>
 
-    <script src="/javascripts/update.js"></script>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="/javascripts/search.js"></script>
     <script src="/javascripts/lightweight-charts.standalone.production.js"></script>
     <script src="/javascripts/start_finance_info.js"></script>
     <script src="/javascripts/bottom.js"></script>
-    <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script>
-        window.onload = (e) => {
+        window.onload = () => {
             get_finance_info();
         }
         document.body.addEventListener("scroll touchmove mousewhell", (event) => {
