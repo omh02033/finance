@@ -16,6 +16,7 @@
 }
 
 .bottom {
+    font-family: 'Nanum Gothic', sans-serif;
     position: absolute;
     top: 0;
     transform: translateY(100%);
@@ -114,12 +115,14 @@
     padding-bottom: 13px;
 }
 .bottom_main_name .main_name {
-    color: #ddf5e2;
+    font-family: 'Nanum Gothic', sans-serif;
+    color: white;
     font-size: 20px;
     font-weight: bold;
     margin-right: 11px;
 }
 .bottom_main_name .long_name {
+    font-family: 'Nanum Gothic', sans-serif;
     font-size: 13.5px;
     color: #8b8b8f;
 }
@@ -134,8 +137,9 @@
 }
 
 .bottom_price_change .bottom_market_price {
-    color: #ddf5e2;
-    font-size: 18px;
+    font-family: 'Nanum Gothic', sans-serif;
+    color: white;
+    font-size: 17px;
     font-weight: bold;
     display: inline-block;
     margin-right: 17px;
@@ -176,17 +180,19 @@
 }
 
 .bottom .switcher-item {
+    font-family: 'Nanum Gothic', sans-serif;
     cursor: pointer;
     text-decoration: none;
     display: inline-block;
     padding: 6px 6px;
-    font-size: 14px;
+    font-size: 13px;
     color: #646464;
     background-color: transparent;
     margin-right: 8px;
     border: none;
     border-radius: 4px;
     outline: none;
+    width: auto;
 }
 
 .bottom .switcher-item:hover {

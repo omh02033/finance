@@ -55,6 +55,38 @@
             overflow: hidden;
         }
 
+        .bottom_info {
+            display: flex;
+            overflow-x: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .bottom_info::-webkit-scrollbar {
+            display: none;
+        }
+        .bottom_info_table {
+            border: 0;
+            margin: 0;
+            border-right: 1px solid #8b8b8f;
+            width: 150px;
+            margin: 5px;
+            padding-right: 5px;
+        }
+        .bottom_info_table.bit4 {
+            border-right: none;
+        }
+        .bottom_info_table span, .bottom_info_table td {
+            font-size: 13px;
+        }
+        .bottom_info_table .info_expl {
+            color: #8b8b8f;
+        }
+        .bottom_info_table .info_value {
+            color: white;
+            font-weight: bold;
+            text-align: right;
+            font-family: 'Nanum Gothic', sans-serif;
+        }
     </style>
 </head>
 <body>
@@ -95,11 +127,78 @@
         </div>
         
         <div class="bottom_price_change">
-            <div class="bottom_market_price">7,600.00</div>
-            <div class="bottom_market_change green price_green">+4,000</div>
+            <div class="bottom_market_price"></div>
+            <div class="bottom_market_change"></div>
         </div>
 
         <div class="bottom_graph">
+        </div>
+
+        <div class="bottom_info">
+            <table class="bottom_info_table bit1">
+                <tbody>
+                    <tr>
+                        <td class="info_expl">개장가</td>
+                        <td class="info_value"><span id="MarketOpen">-</span></td>
+                    </tr>
+                    <tr>
+                        <td class="info_expl">최고가</td>
+                        <td class="info_value"><span id="MarketDayHigh">-</span></td>
+                    </tr>
+                    <tr>
+                        <td class="info_expl">최저가</td>
+                        <td class="info_value"><span id="MarketDayLow">-</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="bottom_info_table bit2">
+                <tbody>
+                    <tr>
+                        <td class="info_expl">거래량</td>
+                        <td class="info_value"><span id="MarketVolume">-</span></td>
+                    </tr>
+                    <tr>
+                        <td class="info_expl">PER</td>
+                        <td class="info_value"><span id="trailingPE">-</span></td>
+                    </tr>
+                    <tr>
+                        <td class="info_expl">시가 총액</td>
+                        <td class="info_value"><span id="marketCap">-</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="bottom_info_table bit3">
+                <tbody>
+                    <tr>
+                        <td class="info_expl">52주 최고</td>
+                        <td class="info_value"><span id="fiftyTwoWeekHigh">-</span></td>
+                    </tr>
+                    <tr>
+                        <td class="info_expl">52주 최저</td>
+                        <td class="info_value"><span id="fiftyTwoWeekLow">-</span></td>
+                    </tr>
+                    <tr>
+                        <td class="info_expl">평균 거래량</td>
+                        <td class="info_value"><span id="averageVolume">-</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="bottom_info_table bit4">
+                <tbody>
+                    <tr>
+                        <td class="info_expl">수익률</td>
+                        <td class="info_value"><span id="dividendYield">-</span></td>
+                    </tr>
+                    <tr>
+                        <td class="info_expl">베타</td>
+                        <td class="info_value"><span id="beta">-</span></td>
+                    </tr>
+                    <tr>
+                        <td class="info_expl">주당순이익</td>
+                        <td class="info_value"><span>-</span></td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 

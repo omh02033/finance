@@ -130,7 +130,6 @@ async function get_bottom_graph_info(symbol) {
             for(let i=0; i<b.length; i++) {
                 try {
                     let a = await axios.get(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?symbol=${symbol}&range=${b[i]}&interval=${s[i]}`);
-                    if(b[i] == '2y' || b[i] == '5y') { console.log(a.data.chart.result); }
                     info[k_b[i]] = a.data.chart.result;
                 } catch(err) {
                     console.log(err + '\nerr_code:1');
@@ -141,7 +140,6 @@ async function get_bottom_graph_info(symbol) {
         });
     }
     return await getBreeds().then(data => {
-        // console.log(data.data.chart.result[0]);
         return data;
     });
 

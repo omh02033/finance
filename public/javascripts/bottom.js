@@ -80,6 +80,64 @@ function set_finance_data(dv, color) {
         market_change.classList.add("price_red");
     }
     market_change.innerHTML = finances_data[f_name].market_change;
+
+    let MarketOpen = document.getElementById("MarketOpen");
+    let MarketDayHigh = document.getElementById("MarketDayHigh");
+    let MarketDayLow = document.getElementById("MarketDayLow");
+    let MarketVolume = document.getElementById("MarketVolume");
+    let trailingPE = document.getElementById("trailingPE");
+    let marketCap = document.getElementById("marketCap");
+    let fiftyTwoWeekHigh = document.getElementById("fiftyTwoWeekHigh");
+    let fiftyTwoWeekLow = document.getElementById("fiftyTwoWeekLow");
+    let averageVolume = document.getElementById("averageVolume");
+    let dividendYield = document.getElementById("dividendYield");
+    let beta = document.getElementById("beta");
+
+    function getNum(kind, val) {
+        if(kind == 'P') {
+            if(String(val).length > 12 && val > 0) {
+                val = val / 1000000000000;
+                val = val.toFixed(2) + "조";
+            } else if(String(val).length > 8 && val > 0) {
+                val = val / 100000000;
+                val = val.toFixed(1) + "억";
+            } else if(String(val).length > 6 && val > 0) {
+                val = val / 10000;
+                val = val.toFixed(1) + "만";
+            } else if(String(val).length < 6 && val > 0) {
+                val = val.toLocaleString() + ".00";
+            } else if(val > 0) {
+                val = val.toLocaleString();
+            }
+        } else if(kind == 'B') {
+            val = val * 100
+            val = val.toFixed(2) + "%";
+        }
+        return val;
+    }
+
+    if(finances_data[f_name].price.regularMarketOpen)
+        MarketOpen.innerHTML = getNum('P', finances_data[f_name].price.regularMarketOpen);
+    if(finances_data[f_name].price.regularMarketDayHigh)
+        MarketDayHigh.innerHTML = getNum('P', finances_data[f_name].price.regularMarketDayHigh);
+    if(finances_data[f_name].price.regularMarketDayLow)
+        MarketDayLow.innerHTML = getNum('P', finances_data[f_name].price.regularMarketDayLow);
+    if(finances_data[f_name].price.regularMarketVolume) 
+        MarketVolume.innerHTML = getNum('P', finances_data[f_name].price.regularMarketVolume);
+    if(finances_data[f_name].summaryDetail.trailingPE)
+        trailingPE.innerHTML = getNum('P', finances_data[f_name].summaryDetail.trailingPE);
+    if(finances_data[f_name].price.marketCap)
+        marketCap.innerHTML = getNum('P', finances_data[f_name].price.marketCap);
+    if(finances_data[f_name].summaryDetail.fiftyTwoWeekHigh)
+        fiftyTwoWeekHigh.innerHTML = getNum('P', finances_data[f_name].summaryDetail.fiftyTwoWeekHigh);
+    if(finances_data[f_name].summaryDetail.fiftyTwoWeekLow)
+        fiftyTwoWeekLow.innerHTML = getNum('P', finances_data[f_name].summaryDetail.fiftyTwoWeekLow);
+    if(finances_data[f_name].summaryDetail.averageVolume)
+        averageVolume.innerHTML = getNum('P', finances_data[f_name].summaryDetail.averageVolume);
+    if(finances_data[f_name].summaryDetail.dividendYield)
+        dividendYield.innerHTML = getNum('B', finances_data[f_name].summaryDetail.dividendYield);
+    if(finances_data[f_name].summaryDetail.beta)
+        beta.innerHTML = finances_data[f_name].summaryDetail.beta.toFixed(2);
 }
 
 function bottom_fast(fName, color) {
@@ -489,7 +547,7 @@ let cancel_status = false;
 let bottom_graph = document.querySelector(".bottom_graph");
 
 botto.addEventListener("touchstart", (e) => {
-    if(e.target !== e.currentTarget) if(e.target.tagName == 'CANVAS') return;
+    if(e.target !== e.currentTarget) if(e.target.tagName == 'CANVAS') return; else if(e.target.className.indexOf('info') !== -1 || e.target.className.indexOf('switch') !== -1) return;
     if(!cancel_status) {
         e.preventDefault();
         startY = e.changedTouches[0].screenY;
@@ -499,7 +557,7 @@ botto.addEventListener("touchstart", (e) => {
     }
 });
 botto.addEventListener("touchmove", (e) => {
-    if(e.target !== e.currentTarget) if(e.target.tagName == 'CANVAS') return;
+    if(e.target !== e.currentTarget) if(e.target.tagName == 'CANVAS') return; else if(e.target.className.indexOf('info') !== -1 || e.target.className.indexOf('switch') !== -1) return;
     if(!cancel_status) {
         if(y1 - e.changedTouches[0].pageY > 0) {
             e.preventDefault();
@@ -510,7 +568,7 @@ botto.addEventListener("touchmove", (e) => {
     }
 });
 botto.addEventListener("touchend", (e) => {
-    if(e.target !== e.currentTarget) if(e.target.tagName == 'CANVAS') return;
+    if(e.target !== e.currentTarget) if(e.target.tagName == 'CANVAS') return; else if(e.target.className.indexOf('info') !== -1 || e.target.className.indexOf('switch') !== -1) return;
     if(!cancel_status) {
         endY = e.changedTouches[0].screenY;
         if((endY - startY) < 75) {
