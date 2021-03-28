@@ -17,10 +17,10 @@
     100% { height: 110px; }
 }
 .top.toph65 {
-    animation: toph65 0.2s ease forwards;
+    animation: toph65 0.25s ease forwards;
 }
 .top.toph110 {
-    animation: toph110 0.15s ease forwards;
+    animation: toph110 0.2s ease forwards;
 }
 @keyframes dnani {
     0% { opacity: 1; }
@@ -32,10 +32,10 @@
 }
 .exdn {
     z-index: -1 !important;
-    animation: dnani 0.1s ease forwards;
+    animation: dnani 0.15s ease forwards;
 }
 .exdb {
-    animation: dbani 0.3s ease forwards;
+    animation: dbani 0.35s ease forwards;
 }
 .top .explain {
     position:fixed;
@@ -63,10 +63,10 @@
     100% { top: 65px; }
 }
 .sbtop1 {
-    animation: top55to1 0.2s ease forwards;
+    animation: top55to1 0.25s ease forwards;
 }
 .sbtop55 {
-    animation: top1to55 0.15s ease forwards;
+    animation: top1to55 0.2s ease forwards;
 }
 .top .mainsearchb {
     width: 100%;
@@ -88,7 +88,7 @@
     border-radius: 9px;
     color: #93939a;
     padding: 0 8px 0 8px;
-    transition: width 0.2s ease;
+    transition: width 0.25s ease;
     width: 100%;
     box-sizing: border-box;
     display: flex;
@@ -153,8 +153,8 @@
     100% { transform: translateX(40px); display: none; }
 }
 #search_cancel.s_ctrans0to35 {
-    animation: s_ctrans0to35 0.2s ease forwards;
+    animation: s_ctrans0to35 0.25s ease forwards;
 }
 #search_cancel.s_ctrans35to0 {
-    animation: s_ctrans35to0 0.2s ease forwards;
+    animation: s_ctrans35to0 0.25s ease forwards;
 }

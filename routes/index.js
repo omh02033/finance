@@ -110,7 +110,8 @@ async function fast_get_bottom_graph_info(symbol) {
                 let a = await axios.get(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?symbol=${symbol}&range=1d&interval=1m`);
                 info['1일'] = a.data.chart.result;
             } catch(err) {
-                console.error(err + '\nerr_code:2');
+                console.log(err + '\nerr_code:2');
+                info[k_b[i]] = null;
             }
             resolve(info);
         });
@@ -120,18 +121,20 @@ async function fast_get_bottom_graph_info(symbol) {
 
 async function get_bottom_graph_info(symbol) {
     let info = {};
-    let b = ['1d', '5d', '1m', '3m', '6m', '1y', '2y', '5y', '10y'];
+    let b = ['1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y', '10y'];
     let k_b = ['1일', '5일', '1달', '3달', '6달', '1년', '2년', '5년', '10년'];
-    let s = ['1m', '5m', '30m', '60m', '90m', '1d', '1d', '1wk', '1wk'];
+    let s = ['1m', '5m', '30m', '60m', '1d', '1d', '1d', '1wk', '1wk'];
     
     const getBreeds = async () => {
         return new Promise(async function(resolve, reject) {
             for(let i=0; i<b.length; i++) {
                 try {
                     let a = await axios.get(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?symbol=${symbol}&range=${b[i]}&interval=${s[i]}`);
+                    if(b[i] == '2y' || b[i] == '5y') { console.log(a.data.chart.result); }
                     info[k_b[i]] = a.data.chart.result;
                 } catch(err) {
-                    console.error(err + '\nerr_code:1');
+                    console.log(err + '\nerr_code:1');
+                    info[k_b[i]] = {};
                 }
             }
             resolve(info);
