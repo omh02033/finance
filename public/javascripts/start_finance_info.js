@@ -215,6 +215,7 @@ function make_finance_preview(data, symbol_name) {
     market_price = Number(market_price.toFixed(2)).toLocaleString();
     if(market_price.indexOf('.') == -1 && market_price.length < 7) market_price = market_price + '.00';
     market_price_div.innerHTML = market_price;
+    finances_data[symbol_name]["market_price"] = market_price;
 
     let market_change_div = document.createElement("div");
     market_change_div.classList.add("market_change");
@@ -226,6 +227,7 @@ function make_finance_preview(data, symbol_name) {
     if(color == 'green') market_change = '+' + market_change;
     if(market_change.indexOf('.') && market_change.length < 5) market_change = market_change + '.00'
     market_change_div.innerHTML = market_change;
+    finances_data[symbol_name]["market_change"] = market_change;
 
     price_status_div.appendChild(market_price_div);
     price_status_div.appendChild(market_change_div);
@@ -291,23 +293,16 @@ function get_finance_info() {
 
             if(data.star_status) {
                 for(let i of data.star) {
+                    finances_data[i] = data.data_star[i];
                     colors_data[i] = make_finance_preview(data.data_star[i], i);
                     symbols_data.push(i);
-                    finances_data[i] = data.data_star[i];
                 }
             }
             if(data.definance_status) {
                 for(let i of data.definance) {
+                    finances_data[i] = data.data_definance[i];
                     colors_data[i] = make_finance_preview(data.data_definance[i], i);
                     symbols_data.push(i);
-                    finances_data[i] = data.data_definance[i];
-                }
-            }
-            if(data.view_status) {
-                for(let i of data.view) {
-                    colors_data[i] = make_finance_preview(data.data_view[i], i);
-                    symbols_data.push(i);
-                    finances_data[i] = data.data_view[i];
                 }
             }
 

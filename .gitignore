@@ -1,2 +1,5 @@
 # modules
 node_modules/
+
+test.js
+database.sql

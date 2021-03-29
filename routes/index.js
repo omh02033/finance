@@ -8,6 +8,7 @@ const moment = require('moment');
 const yahooFinance = require('yahoo-finance');
 const axios = require('axios');
 const { start } = require("repl");
+const { lookup } = require("dns");
 
 let conn = mysql.createConnection({
     host: 'localhost',
@@ -28,7 +29,7 @@ router
             if(err1) return res.json(err1);
             res.clearCookie("user");
             let user = data[0];
-            let token = jwt.sign({ phone: user.id, star: user.star, definance: user.default_finance, view: user.view }, config.secret, {expiresIn: '100d'});
+            let token = jwt.sign({ phone: user.id, star: user.star, definance: user.default_finance }, config.secret, {expiresIn: '100d'});
             res.cookie("user", token);
             let today_date = moment().format("MM월 DD일");
             if(today_date.substring(0, 1) == '0') {
@@ -50,25 +51,20 @@ router
         if(err) return res.status(400).json({ result: false, err: err });
         let star = JSON.parse(decoded.star);
         let definance = JSON.parse(decoded.definance);
-        let view = JSON.parse(decoded.view);
 
         let star_status = false;
         let definance_status = false;
-        let view_status = false;
 
         if(star.length > 0) star_status = true;
         if(definance.length > 0) definance_status = true;
-        if(view.length > 0) view_status = true;
 
         let finance_star = [];
         let finance_definance = [];
-        let finance_view = [];
 
         if(star_status) finance_star = await get_finance_info(star);
         if(definance_status) finance_definance = await get_finance_info(definance);
-        if(view_status) finance_view = await get_finance_info(view);
 
-        res.status(200).json({ result: true, data_star: finance_star, data_definance: finance_definance, data_view: finance_view, star_status: star_status, definance_status: definance_status, view_status: view_status, star: star, definance: definance, view: view });
+        res.status(200).json({ result: true, data_star: finance_star, data_definance: finance_definance, star_status: star_status, definance_status: definance_status, star: star, definance: definance });
     });
 })
 
@@ -99,7 +95,121 @@ router
     res.status(200).json({data: info});
 })
 
+.post('/chart/guess', async (req, res) => {
+    await guess_finance(req.body.symbol, req, res);
+})
+
+.post('/search', async (req, res) => {
+    let data = await search(req.body.val);
+    res.status(200).json({data: data});
+})
+
+.post('/star/add', (req, res) => {
+    let token = req.cookies.user;
+    jwt.verify(token, config.secret, (err, decoded) => {
+        if(err) return res.status(400).json({ result: false, err: err, msg: err });
+        let star = JSON.parse(decoded.star);
+        star.push(req.body.symbol);
+        let sql = 'UPDATE account SET star=? WHERE id=?';
+        conn.query(sql, [JSON.stringify(star), decoded.phone], (err1, rows, fields) => {
+            if(err1) return res.status(400).json({ result: false, err: err1, msg: err1 });
+            res.status(200).json({ msg: '관심 종목에 추가되었습니다.\n어플 다시시작하면 적용이 됩니다.\n어플을 다시시작 하시겠습니까?' });
+        });
+    });
+})
+.post('/star/remove', (req, res) => {
+    let token = req.cookies.user;
+    jwt.verify(token, config.secret, (err, decoded) => {
+        if(err) return res.status(400).json({ result: false, msg: err });
+        let de = JSON.parse(decoded.definance);
+        let star = JSON.parse(decoded.star);
+
+        if(de.indexOf(req.body.symbol) !== -1) {
+            de.splice(de.indexOf(req.body.symbol), 1);
+            let sql = 'UPDATE account SET default_finance=? WHERE id=?';
+            conn.query(sql, [JSON.stringify(de), decoded.phone], (err1, rows, fields) => {
+                if(err1) return res.status(400).json({ result: false,  err: err1, msg: err1 });
+                return res.status(200).json({ msg: '관심 종목에 제거되었습니다.\n어플을 다시시작하면 적용이 됩니다.\n어플을 다시시작 하시겠습니까?' });
+            });
+        } else if(star.indexOf(req.body.symbol) !== -1) {
+            star.splice(star.indexOf(req.body.symbol), 1);
+            let sql = 'UPDATE account SET star=? WHERE id=?';
+            conn.query(sql, [JSON.stringify(star), decoded.phone], (err1, rows, fields) => {
+                if(err1) return res.status(400).json({ result: false,  err: err1, msg: err1 });
+                return res.status(200).json({ msg: '관심 종목에 제거되었습니다.\n어플을 다시시작하면 적용이 됩니다.\n어플을 다시시작 하시겠습니까?' });
+            });
+        } else {
+            res.status(200).json({ msg: '현재 이 주식은 관심 종목에 있지 않습니다.', result: 'not' });
+        }
+    });
+})
+
+.post('/cookies/get', (req, res) => {
+    let token = req.cookies.user;
+    jwt.verify(token, config.secret, (err, decoded) => {
+        if(err) return res.status(400).json({ err: err });
+        res.status(200).json({ data: decoded });
+    });
+})
+
 module.exports = router;
+
+async function guess_finance(symbol, req, res) {
+    async function lookup(kind) {
+        return await yahooFinance.quote({
+            symbols: [symbol + kind],
+            modules: [ 'price', 'summaryDetail' ]
+        }, function(err, quotes) {
+            fName = symbol + kind;
+            return quotes;
+        });
+    }
+    let info;
+    let fName;
+    try {
+        info = await lookup('.KS');
+    } catch {
+        info = await lookup('.KQ');
+    }
+
+    async function get_korea_name() {
+        const response = await axios.get(`https://m.stock.naver.com/api/item/getOverallHeaderItem.nhn?code=${symbol}`)
+        return response.data.result.nm;
+    }
+    info[fName]['korea_name'] = await get_korea_name();
+
+    let market_price = info[fName].price.regularMarketPrice;
+    market_price = Number(market_price.toFixed(2)).toLocaleString();
+    if(market_price.indexOf('.') == -1 && market_price.length < 7) market_price = market_price + '.00';
+    info[fName]["market_price"] = market_price;
+
+    let market_change = info[fName].price.regularMarketChange;
+    let color;
+    market_change = Number(market_change.toFixed(2)).toLocaleString();
+    if(Number(market_change.replace(',', '')) >= 0) color='green';
+    else color='red';
+    if(color == 'green') market_change = '+' + market_change;
+    if(market_change.indexOf('.') && market_change.length < 5) market_change = market_change + '.00'
+    info[fName]["market_change"] = market_change;
+
+    console.log(info);
+    return res.status(200).json({data: info, name: fName});
+}
+
+async function search(val) {
+    let a;
+    const getBreeds = async () => {
+        return new Promise(async function(resolve, reject) {
+            try {
+                a = await axios.get(`https://ac.finance.naver.com/ac?_callback=window.__jindo_callback._0&q=${encodeURI(val)}&q_enc=euc-kr&t_koreng=1&st=111&r_lt=111`);
+            } catch(err) {
+                console.log(err + '\nerr_code:3');
+            }
+            resolve(a);
+        });
+    }
+    return await getBreeds().then(data => { return data.data; });
+}
 
 async function fast_get_bottom_graph_info(symbol) {
     let info = {};
@@ -110,7 +220,8 @@ async function fast_get_bottom_graph_info(symbol) {
                 let a = await axios.get(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?symbol=${symbol}&range=1d&interval=1m`);
                 info['1일'] = a.data.chart.result;
             } catch(err) {
-                console.error(err + '\nerr_code:2');
+                console.log(err + '\nerr_code:2');
+                info[k_b[i]] = null;
             }
             resolve(info);
         });
@@ -120,9 +231,9 @@ async function fast_get_bottom_graph_info(symbol) {
 
 async function get_bottom_graph_info(symbol) {
     let info = {};
-    let b = ['1d', '5d', '1m', '3m', '6m', '1y', '2y', '5y', '10y'];
+    let b = ['1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y', '10y'];
     let k_b = ['1일', '5일', '1달', '3달', '6달', '1년', '2년', '5년', '10년'];
-    let s = ['1m', '5m', '30m', '60m', '90m', '1d', '1d', '1wk', '1wk'];
+    let s = ['1m', '5m', '30m', '60m', '1d', '1d', '1d', '1wk', '1wk'];
     
     const getBreeds = async () => {
         return new Promise(async function(resolve, reject) {
@@ -131,14 +242,14 @@ async function get_bottom_graph_info(symbol) {
                     let a = await axios.get(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?symbol=${symbol}&range=${b[i]}&interval=${s[i]}`);
                     info[k_b[i]] = a.data.chart.result;
                 } catch(err) {
-                    console.error(err + '\nerr_code:1');
+                    console.log(err + '\nerr_code:1');
+                    info[k_b[i]] = {};
                 }
             }
             resolve(info);
         });
     }
     return await getBreeds().then(data => {
-        // console.log(data.data.chart.result[0]);
         return data;
     });
 
