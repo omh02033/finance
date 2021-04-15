@@ -45,7 +45,7 @@ function form_search(e) {
                 main_blind.removeChild(main_blind.firstChild);
             }
             let div = document.createElement("div");
-            div.classList(`f_dimigo`);
+            div.classList.add(`f_dimigo`);
             div.ontouchend = function() {
                 if(!bottoming) {
                     bottoming = true;
