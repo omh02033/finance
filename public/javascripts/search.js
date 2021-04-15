@@ -40,33 +40,6 @@ function form_search(e) {
         let loader = document.createElement("div");
         loader.classList.add("loader");
         main_blind.appendChild(loader);
-        if(search_bar.value == '디미파이') {
-            while(main_blind.hasChildNodes()) {
-                main_blind.removeChild(main_blind.firstChild);
-            }
-            let div = document.createElement("div");
-            div.classList.add(`f_dimigo`);
-            div.ontouchend = function() {
-                if(!bottoming) {
-                    bottoming = true;
-                    dimigo_bottom_on(this);
-                }
-            }
-
-            let main_name = document.createElement("div");
-            let long_name = document.createElement("div");
-
-            main_name.classList.add("main_name");
-            long_name.classList.add("long_name");
-
-            main_name.innerHTML = 'DIMI-FI';
-            long_name.innerHTML = '디미파이';
-
-            div.appendChild(main_name);
-            div.appendChild(long_name);
-
-            main_blind.appendChild(div);
-        }
         let info = { val: search_bar.value }
         let xhr = new XMLHttpRequest();
         xhr.open('POST', '/search/');
@@ -75,6 +48,33 @@ function form_search(e) {
             if(xhr.readyState === 4 && xhr.status === 200) {
                 while(main_blind.hasChildNodes()) {
                     main_blind.removeChild(main_blind.firstChild);
+                }
+                if(search_bar.value == '디미파이') {
+                    while(main_blind.hasChildNodes()) {
+                        main_blind.removeChild(main_blind.firstChild);
+                    }
+                    let div = document.createElement("div");
+                    div.classList.add(`f_dimigo`);
+                    div.ontouchend = function() {
+                        if(!bottoming) {
+                            bottoming = true;
+                            dimigo_bottom_on(this);
+                        }
+                    }
+        
+                    let main_name = document.createElement("div");
+                    let long_name = document.createElement("div");
+        
+                    main_name.classList.add("main_name");
+                    long_name.classList.add("long_name");
+        
+                    main_name.innerHTML = 'DIMI-FI';
+                    long_name.innerHTML = '디미파이';
+        
+                    div.appendChild(main_name);
+                    div.appendChild(long_name);
+        
+                    main_blind.appendChild(div);
                 }
                 let data = JSON.parse(xhr.responseText);
                 let d = data.data.substring(27, data.data.length-1);
