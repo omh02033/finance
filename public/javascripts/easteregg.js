@@ -1,6 +1,5 @@
 function dimigo_bottom_on(dv) {
     search_blur();
-    finances_data[data.name] = data.data[data.name];
     dv.className = "f_dimigo";
     roll_s = setInterval(bottom_top_roll, 70);
     top_explain.classList.remove("exdn");
