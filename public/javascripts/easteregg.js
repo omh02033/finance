@@ -20,7 +20,7 @@ function dimigo_bottom_on(dv) {
     bottom_graph_set_dimigo(color);
 }
 
-function set_finance_data(color) {
+function set_finance_data_dimigo(color) {
     let main_name = document.querySelector(".bottom_main_name .main_name");
     main_name.innerHTML = '디미파이';
 
@@ -61,7 +61,7 @@ function set_finance_data(color) {
     beta.innerHTML = '너무 느림';
 }
 
-function bottom_graph_set(color) {
+function bottom_graph_set_dimigo(color) {
     let bottom_graph = document.querySelector('.bottom_graph');
     while(bottom_graph.hasChildNodes()) {
         bottom_graph.removeChild(bottom_graph.firstChild);
