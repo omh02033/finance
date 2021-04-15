@@ -11,9 +11,9 @@ const { start } = require("repl");
 const { lookup } = require("dns");
 
 let conn = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
+    host: process.env.DATABASE_HOST,
+    user: process.env.DATABASE_USER,
+    password: process.env.DATABASE_PASSWORD,
     database: 'nagongfinance'
 });
 conn.connect();
