@@ -40,9 +40,6 @@ router
         });
     });
 })
-.get('/test/', (req, res) => {
-    res.sendFile('test.html', { root: path.join(__dirname, '../') });
-})
 
 .post('/finance/', async (req, res) => {
     let token = req.cookies.user;

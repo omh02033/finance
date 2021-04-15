@@ -3,8 +3,6 @@ const router = express.Router();
 const config = require('../config/jwt');
 const jwt = require('jsonwebtoken');
 const mysql = require('mysql');
-const path = require('path');
-const moment = require('moment');
 
 let conn = mysql.createConnection({
     host: 'localhost',
