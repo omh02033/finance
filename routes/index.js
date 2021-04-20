@@ -284,16 +284,14 @@ async function get_finance_info(symbol, res) {
 
     async function get_korea_name(sb, res) {
         try {
-            console.log(`https://m.stock.naver.com/api/item/getOverallHeaderItem.nhn?code=${symbol}`);
-            const response = await axios.get(`https://m.stock.naver.com/api/item/getOverallHeaderItem.nhn?code=${sb.split['.'][0]}`);
+            const response = await axios.get(`https://m.stock.naver.com/api/item/getOverallHeaderItem.nhn?code=${sb.split('.')[0]}`);
             return response.data.result.nm;
         } catch {
             try {
-                console.log(sb);
                 const response = await axios.get(`https://api.stock.naver.com/stock/${sb}.O/basic`);
                 return response.data.stockName;
             } catch(err) {
-                console.log(err + "\nerror_code:4\n" + sb);
+                console.log(err + "\nerror_code:4\n");
                 return res.status(501).json({ msg: '서버 내부에서 문제가 발생하였습니다.' });
             }
         }
