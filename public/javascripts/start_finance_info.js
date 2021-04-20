@@ -157,6 +157,9 @@ function get_pre_graph(symbols_data, colors_data) {
                     from: 0.1,
                     to: data[symbol_name].data.length-1
                 });
+            } else if(xhr.readyState === 4 && xhr.status === 501) {
+                let data = JSON.parse(xhr.responseText);
+                alert(`${data.msg}\n잠시후에 다시시작 해주세요.`);
             }
         }
         xhr.send(JSON.stringify(info));
@@ -310,6 +313,9 @@ function get_finance_info() {
                 get_pre_graph(symbols_data, colors_data);
             }
             roll_start(Object.keys(finances_data).length);
+        } else if(xhr.readyState === 4 && xhr.status === 501) {
+            let data = JSON.parse(xhr.responseText);
+            alert(`${data.msg}\n잠시후에 다시시작 해주세요.`);
         }
     }
     xhr.send(null);

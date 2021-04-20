@@ -47,6 +47,9 @@ star.ontouchend = function () {
                 let a = confirm(data.msg);
                 if(a) location.replace(location.href);
             }
+        } else if(xhr.readyState === 4 && xhr.status === 501) {
+            let data = JSON.parse(xhr.responseText);
+            alert(`${data.msg}\n잠시후에 다시시작 해주세요.`);
         }
     }
     xhr.send(JSON.stringify(info));
@@ -92,6 +95,9 @@ function bottom_on(dv) {
                 star.classList.add(dv.className);
                 star.innerHTML = '관심 종목에 추가';
             }
+        } else if(xhr.readyState === 4 && xhr.status === 501) {
+            let data = JSON.parse(xhr.responseText);
+            alert(`${data.msg}\n잠시후에 다시시작 해주세요.`);
         }
     }
     xhr.send();
@@ -344,6 +350,9 @@ function bottom_fast(fName, color) {
                 from: data.data[intervals[0]][0].meta.tradingPeriods[0][0].start,
                 to: data.data[intervals[0]][0].meta.tradingPeriods[0][0].end
             });
+        } else if(xhr.readyState === 4 && xhr.status === 501) {
+            let data = JSON.parse(xhr.responseText);
+            alert(`${data.msg}\n잠시후에 다시시작 해주세요.`);
         }
     }
     xhr.send()
@@ -595,6 +604,9 @@ function bottom_graph_set(fName, color) {
                 from: data.data[intervals[0]][0].meta.tradingPeriods[0][0].start,
                 to: data.data[intervals[0]][0].meta.tradingPeriods[0][0].end
             });
+        } else if(xhr.readyState === 4 && xhr.status === 501) {
+            let data = JSON.parse(xhr.responseText);
+            alert(`${data.msg}\n잠시후에 다시시작 해주세요.`);
         }
     }
     xhr.send();
@@ -658,9 +670,9 @@ function search_bottom_on(dv) {
             else color = 'red';
             set_finance_data(dv, color);
             bottom_graph_set(dv.className.replace('___', '.').substring(2), color);
-        } else if(xhr.status == 501 && xhr.readyState === 4) {
+        } else if(xhr.readyState === 4 && xhr.status === 501) {
             let data = JSON.parse(xhr.responseText);
-            alert(data.msg);
+            alert(`${data.msg}\n잠시후에 다시시작 해주세요.`);
         }
     }
     xhr.send(JSON.stringify(info));

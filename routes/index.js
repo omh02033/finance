@@ -176,7 +176,7 @@ async function guess_finance(symbol, req, res) {
                 try {
                     info = await lookup('');
                 } catch {
-                    return err_send(res);
+                    return res.status(501).json({ msg: '서버 내부에서 문제가 발생하였습니다.' });
                 }
             }
         }
@@ -207,7 +207,6 @@ async function guess_finance(symbol, req, res) {
     if(market_change.indexOf('.') && market_change.length < 5) market_change = market_change + '.00'
     info[fName]["market_change"] = market_change;
 
-    console.log(info);
     return res.status(200).json({data: info, name: fName});
 }
 
@@ -276,8 +275,8 @@ async function get_finance_info(symbol, res) {
         modules: [ 'price', 'summaryDetail' ]
     }, function(err, quotes) {
         if(err) {
-            console.error(err);
-            return err_send(res);
+            console.log(err + "\nerror_code:6");
+            return res.status(501).json({ msg: '서버 내부에서 문제가 발생하였습니다.' });
         } else {
             return quotes;
         }
@@ -291,8 +290,9 @@ async function get_finance_info(symbol, res) {
             try {
                 const response = await axios.get(`https://api.stock.naver.com/stock/${sb}.O/basic`);
                 return response.data.stockName;
-            } catch {
-                return err_send(res);
+            } catch(err) {
+                console.log(err + "\nerror_code:4");
+                return res.status(501).json({ msg: '서버 내부에서 문제가 발생하였습니다.' });
             }
         }
     }
@@ -307,8 +307,8 @@ async function get_chart_info_preview(symbol, res) {
         try {
             return await axios.get(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?symbol=${symbol}&range=1d&interval=5m`);
         } catch(err) {
-            console.error(err);
-            return err_send(res);
+            console.log(err + "\nerror_code:5");
+            return res.status(501).json({ msg: '서버 내부에서 문제가 발생하였습니다.' });
         }
     };
     
@@ -317,8 +317,4 @@ async function get_chart_info_preview(symbol, res) {
         return breeds.data.chart.result[0];
     }
     return await countBreeds();
-}
-
-function err_send(res) {
-    return res.status(501).json({ msg: '서버 내부에서 문제가 발생하였습니다.' });
 }

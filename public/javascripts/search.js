@@ -106,6 +106,9 @@ function form_search(e) {
     
                         main_blind.appendChild(div);
                     }
+                } else if(xhr.readyState === 4 && xhr.status === 501) {
+                    let data = JSON.parse(xhr.responseText);
+                    alert(`${data.msg}\n잠시후에 다시시작 해주세요.`);
                 }
             }
             xhr.send(JSON.stringify(info));
