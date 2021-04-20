@@ -59,8 +59,8 @@ router
         let finance_star = [];
         let finance_definance = [];
 
-        if(star_status) finance_star = await get_finance_info(star);
-        if(definance_status) finance_definance = await get_finance_info(definance);
+        if(star_status) finance_star = await get_finance_info(star, res);
+        if(definance_status) finance_definance = await get_finance_info(definance, res);
 
         res.status(200).json({ result: true, data_star: finance_star, data_definance: finance_definance, star_status: star_status, definance_status: definance_status, star: star, definance: definance });
     });
@@ -68,7 +68,7 @@ router
 
 .post('/chart/preview', async (req, res) => {
     let result = {};
-    let a = await get_chart_info_preview(req.body.symbols);
+    let a = await get_chart_info_preview(req.body.symbols, res);
     let b = [];
 
     for(let j in a.timestamp) {
@@ -176,7 +176,7 @@ async function guess_finance(symbol, req, res) {
                 try {
                     info = await lookup('');
                 } catch {
-                    return err_send();
+                    return err_send(res);
                 }
             }
         }
@@ -270,45 +270,45 @@ async function get_bottom_graph_info(symbol) {
 
 }
 
-async function get_finance_info(symbol) {
+async function get_finance_info(symbol, res) {
     let info = await yahooFinance.quote({
         symbols: symbol,
         modules: [ 'price', 'summaryDetail' ]
     }, function(err, quotes) {
         if(err) {
             console.error(err);
-            return err_send();
+            return err_send(res);
         } else {
             return quotes;
         }
     });
 
-    async function get_korea_name(sb) {
+    async function get_korea_name(sb, res) {
         try {
-            const response = await axios.get(`https://m.stock.naver.com/api/item/getOverallHeaderItem.nhn?code=${symbol}`);
+            const response = await axios.get(`https://m.stock.naver.com/api/item/getOverallHeaderItem.nhn?code=${sb}`);
             return response.data.result.nm;
         } catch {
             try {
-                const response = await axios.get(`https://api.stock.naver.com/stock/${symbol}.O/basic`);
+                const response = await axios.get(`https://api.stock.naver.com/stock/${sb}.O/basic`);
                 return response.data.stockName;
             } catch {
-                err_send();
+                return err_send(res);
             }
         }
     }
     for(let sb of symbol) {
-        info[sb]['korea_name'] = await get_korea_name(sb);
+        info[sb]['korea_name'] = await get_korea_name(sb, res);
     }
 
     return info;
 }
-async function get_chart_info_preview(symbol) {
+async function get_chart_info_preview(symbol, res) {
     const getBreeds = async () => {
         try {
             return await axios.get(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?symbol=${symbol}&range=1d&interval=5m`);
         } catch(err) {
             console.error(err);
-            return err_send();
+            return err_send(res);
         }
     };
     
@@ -319,6 +319,6 @@ async function get_chart_info_preview(symbol) {
     return await countBreeds();
 }
 
-function err_send() {
+function err_send(res) {
     return res.status(501).json({ msg: '서버 내부에서 문제가 발생하였습니다.' });
 }
