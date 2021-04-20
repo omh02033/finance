@@ -170,16 +170,25 @@ async function guess_finance(symbol, req, res) {
             info = await lookup('.KQ');
         } catch {
             try {
-                info = await lookup('');
+                info = await lookup('.O');
             } catch {
-                return res.status(501).json({ msg: '서버 내부에서 오류가 발생했습니다.' });
+                try {
+                    info = await lookup('');
+                } catch {
+                    return res.status(501).json({ msg: '서버 내부에서 오류가 발생했습니다.' });
+                }
             }
         }
     }
 
     async function get_korea_name() {
-        const response = await axios.get(`https://m.stock.naver.com/api/item/getOverallHeaderItem.nhn?code=${symbol}`)
-        return response.data.result.nm;
+        try {
+            const response = await axios.get(`https://m.stock.naver.com/api/item/getOverallHeaderItem.nhn?code=${symbol}`);
+            return response.data.result.nm;
+        } catch {
+            const response = await axios.get(`https://api.stock.naver.com/stock/${symbol}/basic`);
+            return response.data.stockName;
+        }
     }
     info[fName]['korea_name'] = await get_korea_name();
 
