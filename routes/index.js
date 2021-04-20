@@ -284,7 +284,8 @@ async function get_finance_info(symbol, res) {
 
     async function get_korea_name(sb, res) {
         try {
-            const response = await axios.get(`https://m.stock.naver.com/api/item/getOverallHeaderItem.nhn?code=${sb}`);
+            console.log(`https://m.stock.naver.com/api/item/getOverallHeaderItem.nhn?code=${symbol}`);
+            const response = await axios.get(`https://m.stock.naver.com/api/item/getOverallHeaderItem.nhn?code=${sb.split['.'][0]}`);
             return response.data.result.nm;
         } catch {
             try {
