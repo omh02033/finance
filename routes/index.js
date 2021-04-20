@@ -217,7 +217,7 @@ async function search(val) {
             try {
                 a = await axios.get(`https://ac.finance.naver.com/ac?_callback=window.__jindo_callback._0&q=${encodeURI(val)}&q_enc=euc-kr&t_koreng=1&st=111&r_lt=111`);
             } catch(err) {
-                console.log(err + '\nerr_code:3');
+                console.log(err + '\nerror_code:3');
             }
             resolve(a);
         });
@@ -234,7 +234,7 @@ async function fast_get_bottom_graph_info(symbol) {
                 let a = await axios.get(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?symbol=${symbol}&range=1d&interval=1m`);
                 info['1일'] = a.data.chart.result;
             } catch(err) {
-                console.log(err + '\nerr_code:2');
+                console.log(err + '\nerror_code:2');
                 info[k_b[i]] = null;
             }
             resolve(info);
@@ -256,7 +256,7 @@ async function get_bottom_graph_info(symbol) {
                     let a = await axios.get(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?symbol=${symbol}&range=${b[i]}&interval=${s[i]}`);
                     info[k_b[i]] = a.data.chart.result;
                 } catch(err) {
-                    console.log(err + '\nerr_code:1');
+                    console.log(err + '\nerror_code:1');
                     info[k_b[i]] = {};
                 }
             }
@@ -288,6 +288,7 @@ async function get_finance_info(symbol, res) {
             return response.data.result.nm;
         } catch {
             try {
+                console.log(sb);
                 const response = await axios.get(`https://api.stock.naver.com/stock/${sb}.O/basic`);
                 return response.data.stockName;
             } catch(err) {
