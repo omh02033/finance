@@ -281,8 +281,13 @@ async function get_finance_info(symbol) {
     });
 
     async function get_korea_name(sb) {
-        const response = await axios.get(`https://m.stock.naver.com/api/item/getOverallHeaderItem.nhn?code=${sb.split('.')[0]}`)
-        return response.data.result.nm;
+        try {
+            const response = await axios.get(`https://m.stock.naver.com/api/item/getOverallHeaderItem.nhn?code=${symbol}`);
+            return response.data.result.nm;
+        } catch {
+            const response = await axios.get(`https://api.stock.naver.com/stock/${symbol}.O/basic`);
+            return response.data.stockName;
+        }
     }
     for(let sb of symbol) {
         if(sb.split('.')[1] == 'KS' || sb.split('.')[1] == 'KQ') {
