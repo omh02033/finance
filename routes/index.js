@@ -186,7 +186,7 @@ async function guess_finance(symbol, req, res) {
             const response = await axios.get(`https://m.stock.naver.com/api/item/getOverallHeaderItem.nhn?code=${symbol}`);
             return response.data.result.nm;
         } catch {
-            const response = await axios.get(`https://api.stock.naver.com/stock/${symbol}/basic`);
+            const response = await axios.get(`https://api.stock.naver.com/stock/${symbol}.O/basic`);
             return response.data.stockName;
         }
     }
