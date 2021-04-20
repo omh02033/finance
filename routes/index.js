@@ -9,6 +9,7 @@ const yahooFinance = require('yahoo-finance');
 const axios = require('axios');
 const { start } = require("repl");
 const { lookup } = require("dns");
+const { EINPROGRESS } = require("constants");
 
 let conn = mysql.createConnection({
     host: process.env.DATABASE_HOST,
@@ -175,7 +176,7 @@ async function guess_finance(symbol, req, res) {
                 try {
                     info = await lookup('');
                 } catch {
-                    return res.status(501).json({ msg: '서버 내부에서 오류가 발생했습니다.' });
+                    return err_send();
                 }
             }
         }
@@ -274,8 +275,10 @@ async function get_finance_info(symbol) {
         symbols: symbol,
         modules: [ 'price', 'summaryDetail' ]
     }, function(err, quotes) {
-        if(err) console.error(err);
-        else {
+        if(err) {
+            console.error(err);
+            return err_send();
+        } else {
             return quotes;
         }
     });
@@ -285,14 +288,16 @@ async function get_finance_info(symbol) {
             const response = await axios.get(`https://m.stock.naver.com/api/item/getOverallHeaderItem.nhn?code=${symbol}`);
             return response.data.result.nm;
         } catch {
-            const response = await axios.get(`https://api.stock.naver.com/stock/${symbol}.O/basic`);
-            return response.data.stockName;
+            try {
+                const response = await axios.get(`https://api.stock.naver.com/stock/${symbol}.O/basic`);
+                return response.data.stockName;
+            } catch {
+                err_send();
+            }
         }
     }
     for(let sb of symbol) {
-        if(sb.split('.')[1] == 'KS' || sb.split('.')[1] == 'KQ') {
-            info[sb]['korea_name'] = await get_korea_name(sb);
-        }
+        info[sb]['korea_name'] = await get_korea_name(sb);
     }
 
     return info;
@@ -303,6 +308,7 @@ async function get_chart_info_preview(symbol) {
             return await axios.get(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?symbol=${symbol}&range=1d&interval=5m`);
         } catch(err) {
             console.error(err);
+            return err_send();
         }
     };
     
@@ -311,4 +317,8 @@ async function get_chart_info_preview(symbol) {
         return breeds.data.chart.result[0];
     }
     return await countBreeds();
+}
+
+function err_send() {
+    return res.status(501).json({ msg: '서버 내부에서 문제가 발생하였습니다.' });
 }
