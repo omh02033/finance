@@ -292,7 +292,7 @@ async function get_finance_info(symbol, res) {
                 const response = await axios.get(`https://api.stock.naver.com/stock/${sb}.O/basic`);
                 return response.data.stockName;
             } catch(err) {
-                console.log(err + "\nerror_code:4");
+                console.log(err + "\nerror_code:4\n" + sb);
                 return res.status(501).json({ msg: '서버 내부에서 문제가 발생하였습니다.' });
             }
         }
