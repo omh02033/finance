@@ -106,6 +106,7 @@ function bottom_graph_set_dimigo(color) {
     let year = today.getFullYear();
     let month = today.getMonth() + 1;
     let date = today.getDate();
+    
     let _1dayData = [
         { 'time': `${year}-${month}-${date} 01:00:00`, value: 900 },
         { 'time': `${year}-${month}-${date} 02:00:00`, value: 980 },

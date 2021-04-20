@@ -658,6 +658,9 @@ function search_bottom_on(dv) {
             else color = 'red';
             set_finance_data(dv, color);
             bottom_graph_set(dv.className.replace('___', '.').substring(2), color);
+        } else if(xhr.status == 501 && xhr.readyState === 4) {
+            let data = JSON.parse(xhr.responseText);
+            alert(data.msg);
         }
     }
     xhr.send(JSON.stringify(info));

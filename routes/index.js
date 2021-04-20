@@ -166,7 +166,15 @@ async function guess_finance(symbol, req, res) {
     try {
         info = await lookup('.KS');
     } catch {
-        info = await lookup('.KQ');
+        try {
+            info = await lookup('.KQ');
+        } catch {
+            try {
+                info = await lookup('');
+            } catch {
+                return res.status(501).json({ msg: '서버 내부에서 오류가 발생했습니다.' });
+            }
+        }
     }
 
     async function get_korea_name() {
