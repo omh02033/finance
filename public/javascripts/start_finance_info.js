@@ -281,38 +281,71 @@ function make_finance_preview(data, symbol_name) {
 }
 
 function get_finance_info() {
+    let g_bar = document.querySelector(".bar");
+    let g_status = document.querySelector(".g_status");
+    g_bar.style.width = "25%";
+    let status = 0;
+    let p = setInterval(()=>{
+        status += 1;
+        g_status.innerHTML = `${status}%`;
+        if(status >= 25) {
+            clearInterval(p);
+        }
+    }, 10);
     let xhr = new XMLHttpRequest();
     xhr.open('POST', '/finance/');
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.onreadystatechange = function() {
+        g_bar.style.width = `${xhr.readyState*25}%`;
+        let p1 = setInterval(() => {
+            g_status.innerHTML = `${status}%`;
+            if(status >= xhr.readyState*25) {
+                console.log("a");
+                console.log(status);
+                console.log(xhr.readyState*25);
+                clearInterval(p1);
+            }
+            if(status >= 100) {
+                g_status.innerHTML = '100%';
+                clearInterval(p1);
+            }
+            status += 1;
+        }, 10);
         if(xhr.readyState === 4 && xhr.status === 200) {
+            // clearInterval(p1);
+            // g_status.innerHTML = "100%";
             let data = JSON.parse(xhr.responseText);
-            document.querySelector(".main").classList.remove("h200");
-            let loader = document.querySelector(".loader");
-            loader.parentNode.removeChild(loader);
-
-            let symbols_data = [];
-            let colors_data = {};
-
-            if(data.star_status) {
-                for(let i of data.star) {
-                    finances_data[i] = data.data_star[i];
-                    colors_data[i] = make_finance_preview(data.data_star[i], i);
-                    symbols_data.push(i);
+            // let loader = document.querySelector(".loader");
+            // loader.parentNode.removeChild(loader);
+            let gauge = document.querySelector(".gauge");
+            setTimeout(()=>{
+                document.querySelector(".main").classList.remove("h200");
+                gauge.parentNode.removeChild(gauge);
+                g_status.parentNode.removeChild(g_status);
+                let symbols_data = [];
+                let colors_data = {};
+    
+                if(data.star_status) {
+                    for(let i of data.star) {
+                        finances_data[i] = data.data_star[i];
+                        colors_data[i] = make_finance_preview(data.data_star[i], i);
+                        symbols_data.push(i);
+                    }
                 }
-            }
-            if(data.definance_status) {
-                for(let i of data.definance) {
-                    finances_data[i] = data.data_definance[i];
-                    colors_data[i] = make_finance_preview(data.data_definance[i], i);
-                    symbols_data.push(i);
+                if(data.definance_status) {
+                    for(let i of data.definance) {
+                        finances_data[i] = data.data_definance[i];
+                        colors_data[i] = make_finance_preview(data.data_definance[i], i);
+                        symbols_data.push(i);
+                    }
                 }
-            }
+    
+                if(symbols_data.length > 0) {
+                    get_pre_graph(symbols_data, colors_data);
+                }
+                roll_start(Object.keys(finances_data).length);
+            }, 800);
 
-            if(symbols_data.length > 0) {
-                get_pre_graph(symbols_data, colors_data);
-            }
-            roll_start(Object.keys(finances_data).length);
         } else if(xhr.readyState === 4 && xhr.status === 501) {
             let data = JSON.parse(xhr.responseText);
             alert(`${data.msg}\n잠시후에 다시시작 해주세요.`);

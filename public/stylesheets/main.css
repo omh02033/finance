@@ -31,6 +31,31 @@
     height: 30px;
     animation: spin 1s linear infinite;
 }
+.gauge {
+    width: 80%;
+    background-color: rgb(43, 43, 43);
+    height: 5px;
+    border-radius: 25px;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    top: 80%;
+    left: 50%;
+}
+.gauge .bar {
+    height: 100%;
+    background-color: rgb(160, 160, 160);
+    border-radius: 25px;
+    transition: width .3s ease-in;
+}
+.g_status {
+    width: 80%;
+    color: white;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    top: calc(80% + 8px);
+    left: 50%;
+    font-size: 10px;
+}
 .loader.chart_l {
     width: 25px;
     height: 25px;
@@ -48,7 +73,7 @@
     border: 3px solid #1b1b1b;
     border-top: 3px solid #636363;
 }
-.main > div:not(.loader):not(.main_blind) {
+.main > div:not(.loader):not(.main_blind):not(.gauge) {
     padding-top: 7px;
     border-bottom: 1px solid #1d1d1e;
     width: 100%;
