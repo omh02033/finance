@@ -310,7 +310,7 @@ function get_finance_info() {
                 clearInterval(p1);
             }
             status += 1;
-        }, 10);
+        }, 50);
         if(xhr.readyState === 4 && xhr.status === 200) {
             // clearInterval(p1);
             // g_status.innerHTML = "100%";
@@ -339,6 +339,8 @@ function get_finance_info() {
                         symbols_data.push(i);
                     }
                 }
+
+                console.log(symbols_data);
     
                 if(symbols_data.length > 0) {
                     get_pre_graph(symbols_data, colors_data);
