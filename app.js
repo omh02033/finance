@@ -19,4 +19,4 @@ app.use(cookieParser());
 app.use('/', require('./routes/index.js'));
 app.use('/account/', require('./routes/account.js'));
 
-app.listen(80, () => { console.log("Connected !") });
+app.listen(3000, () => { console.log("Connected !") });
