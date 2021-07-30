@@ -40,79 +40,51 @@ function form_search(e) {
         let loader = document.createElement("div");
         loader.classList.add("loader");
         main_blind.appendChild(loader);
-        if(search_bar.value == '디미파이') {
-            while(main_blind.hasChildNodes()) {
-                main_blind.removeChild(main_blind.firstChild);
-            }
-            let div = document.createElement("div");
-            div.classList.add(`f_dimigo`);
-            div.ontouchend = function() {
-                if(!bottoming) {
-                    bottoming = true;
-                    dimigo_bottom_on(this);
+        let info = { val: search_bar.value }
+        let xhr = new XMLHttpRequest();
+        xhr.open('POST', '/search/');
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onreadystatechange = function() {
+            if(xhr.readyState === 4 && xhr.status === 200) {
+                while(main_blind.hasChildNodes()) {
+                    main_blind.removeChild(main_blind.firstChild);
                 }
-            }
+                let data = JSON.parse(xhr.responseText);
+                let d = data.data.substring(27, data.data.length-1);
+                d = JSON.parse(d);
+                key_db[search_bar.value] = d;
 
-            let main_name = document.createElement("div");
-            let long_name = document.createElement("div");
+                for(let i=0; i < d.items[0].length; i++) {
+                    let div = document.createElement("div");
+                    div.classList.add(`f_${d.items[0][i][0]}`);
 
-            main_name.classList.add("main_name");
-            long_name.classList.add("long_name");
-
-            main_name.innerHTML = 'DIMI-FI';
-            long_name.innerHTML = '디미파이';
-
-            div.appendChild(main_name);
-            div.appendChild(long_name);
-
-            main_blind.appendChild(div);
-        } else {
-            let info = { val: search_bar.value }
-            let xhr = new XMLHttpRequest();
-            xhr.open('POST', '/search/');
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.onreadystatechange = function() {
-                if(xhr.readyState === 4 && xhr.status === 200) {
-                    while(main_blind.hasChildNodes()) {
-                        main_blind.removeChild(main_blind.firstChild);
-                    }
-                    let data = JSON.parse(xhr.responseText);
-                    let d = data.data.substring(27, data.data.length-1);
-                    d = JSON.parse(d);
-                    key_db[search_bar.value] = d;
-    
-                    for(let i=0; i < d.items[0].length; i++) {
-                        let div = document.createElement("div");
-                        div.classList.add(`f_${d.items[0][i][0]}`);
-    
-                        div.ontouchend = function() {
-                            if(!bottoming) {
-                                bottoming = true;
-                                search_bottom_on(this);
-                            }
+                    div.ontouchend = function() {
+                        if(!bottoming) {
+                            bottoming = true;
+                            search_bottom_on(this);
                         }
-    
-                        let main_name = document.createElement("div");
-                        let long_name = document.createElement("div");
-    
-                        main_name.classList.add("main_name");
-                        long_name.classList.add("long_name");
-    
-                        main_name.innerHTML = d.items[0][i][1];
-                        long_name.innerHTML = d.items[0][i][0];
-    
-                        div.appendChild(main_name);
-                        div.appendChild(long_name);
-    
-                        main_blind.appendChild(div);
                     }
-                } else if(xhr.readyState === 4 && xhr.status === 501) {
-                    let data = JSON.parse(xhr.responseText);
-                    alert(`${data.msg}\n잠시후에 다시시작 해주세요.`);
+
+                    let main_name = document.createElement("div");
+                    let long_name = document.createElement("div");
+
+                    main_name.classList.add("main_name");
+                    long_name.classList.add("long_name");
+
+                    main_name.innerHTML = d.items[0][i][1];
+                    long_name.innerHTML = d.items[0][i][0];
+
+                    div.appendChild(main_name);
+                    div.appendChild(long_name);
+
+                    main_blind.appendChild(div);
                 }
+            } else if(xhr.readyState === 4 && xhr.status === 501) {
+                let data = JSON.parse(xhr.responseText);
+                alert(`${data.msg}\n잠시후에 다시시작 해주세요.`);
             }
-            xhr.send(JSON.stringify(info));
         }
+        xhr.send(JSON.stringify(info));
     } else if(search_bar.value && key_db[search_bar.value]) {
         while(main_blind.hasChildNodes()) {
             main_blind.removeChild(main_blind.firstChild);
